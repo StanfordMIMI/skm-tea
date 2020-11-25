@@ -1,5 +1,5 @@
 # 2020 Stanford qDESS Knee Dataset
-authors: Arjun Desai (arjundd@stanford.edu), Elka Rubin, Andrew Schmidt, Akshay Chaudhari
+authors: Arjun Desai (arjundd at stanford dot edu), Elka Rubin, Andrew Schmidt, Akshay Chaudhari
 
 This folder contains the data and annotations for the 2020 Stanford qDESS knee dataset.
 
@@ -242,9 +242,9 @@ Medical data continues to grow incrementally and it is useful to have fixed vers
 on for benchmarking and communicating our results.
 
 If you want to make a new version of the dataset, please follow the rules for versioning detailed
-here (link to be added). Please also run your versioning by both Arjun Desai (arjundd@stanford.edu) and Akshay Chaudhari (akshaysc@stanford.edu).
+here (link to be added). Please also run your versioning by both Arjun Desai (arjundd at stanford dot edu) and Akshay Chaudhari (akshaysc at stanford dot edu).
 
-The most up-to-date version of the qDESS dataset is v0.0.1.
+The most up-to-date version of the qDESS dataset is v0.0.2.
 
 Version history is described below. If new versions are made, add details appropriately
 
