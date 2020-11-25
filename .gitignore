@@ -1,0 +1,9 @@
+# Temporary files
+._*
+**/.DS_Store
+
+# Log files
+**/logs
+
+# Excel files
+*.xlsx

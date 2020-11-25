@@ -1,0 +1,1441 @@
+{
+  "info": {
+    "contributor": "Arjun Desai, Elka Rubin, Andrew Schmidt, Akshay Chaudhari & collaborators",
+    "description": "2020 Stanford qDESS Dataset - test",
+    "year": "2020",
+    "date_created": "2020-10-16 22:51:12 PDT",
+    "version": "v0.0.1"
+  },
+  "categories": [
+    {
+      "supercategory": "Meniscal Tear",
+      "supercategory_id": 1,
+      "id": 1,
+      "name": "Meniscal Tear (Myxoid)"
+    },
+    {
+      "supercategory": "Meniscal Tear",
+      "supercategory_id": 1,
+      "id": 2,
+      "name": "Meniscal Tear (Horizontal)"
+    },
+    {
+      "supercategory": "Meniscal Tear",
+      "supercategory_id": 1,
+      "id": 3,
+      "name": "Meniscal Tear (Radial)"
+    },
+    {
+      "supercategory": "Meniscal Tear",
+      "supercategory_id": 1,
+      "id": 4,
+      "name": "Meniscal Tear (Vertical/Longitudinal)"
+    },
+    {
+      "supercategory": "Meniscal Tear",
+      "supercategory_id": 1,
+      "id": 5,
+      "name": "Meniscal Tear (Oblique)"
+    },
+    {
+      "supercategory": "Meniscal Tear",
+      "supercategory_id": 1,
+      "id": 6,
+      "name": "Meniscal Tear (Complex)"
+    },
+    {
+      "supercategory": "Meniscal Tear",
+      "supercategory_id": 1,
+      "id": 7,
+      "name": "Meniscal Tear (Flap)"
+    },
+    {
+      "supercategory": "Meniscal Tear",
+      "supercategory_id": 1,
+      "id": 8,
+      "name": "Meniscal Tear (Extrusion)"
+    },
+    {
+      "supercategory": "Ligament Tear",
+      "supercategory_id": 2,
+      "id": 9,
+      "name": "Ligament Tear (Low-Grade Sprain)"
+    },
+    {
+      "supercategory": "Ligament Tear",
+      "supercategory_id": 2,
+      "id": 10,
+      "name": "Ligament Tear (Moderate Grade Sprain or Mucoid Degeneration)"
+    },
+    {
+      "supercategory": "Ligament Tear",
+      "supercategory_id": 2,
+      "id": 11,
+      "name": "Ligament Tear (Full Thickness/Complete Tear)"
+    },
+    {
+      "supercategory": "Cartilage Lesion",
+      "supercategory_id": 3,
+      "id": 12,
+      "name": "Cartilage Lesion (1)"
+    },
+    {
+      "supercategory": "Cartilage Lesion",
+      "supercategory_id": 3,
+      "id": 13,
+      "name": "Cartilage Lesion (2A)"
+    },
+    {
+      "supercategory": "Cartilage Lesion",
+      "supercategory_id": 3,
+      "id": 14,
+      "name": "Cartilage Lesion (2B)"
+    },
+    {
+      "supercategory": "Cartilage Lesion",
+      "supercategory_id": 3,
+      "id": 15,
+      "name": "Cartilage Lesion (3)"
+    },
+    {
+      "supercategory": "Effusion",
+      "supercategory_id": 4,
+      "id": 16,
+      "name": "Effusion"
+    }
+  ],
+  "tissues": [
+    {
+      "id": 1,
+      "name": "Meniscus"
+    },
+    {
+      "id": 2,
+      "name": "ACL"
+    },
+    {
+      "id": 3,
+      "name": "PCL"
+    },
+    {
+      "id": 4,
+      "name": "Femoral Cartilage"
+    },
+    {
+      "id": 5,
+      "name": "Patellar Cartilage"
+    },
+    {
+      "id": 6,
+      "name": "Tibial Cartilage"
+    }
+  ],
+  "images": [
+    {
+      "id": 1,
+      "file_name": "MTR_005.h5",
+      "msp_id": "0000099_V00",
+      "msp_file_name": "0000099_V00.h5",
+      "scan_id": "MTR_005",
+      "subject_id": 99,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": true
+    },
+    {
+      "id": 2,
+      "file_name": "MTR_006.h5",
+      "msp_id": "0000164_V00",
+      "msp_file_name": "0000164_V00.h5",
+      "scan_id": "MTR_006",
+      "subject_id": 164,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": true
+    },
+    {
+      "id": 3,
+      "file_name": "MTR_030.h5",
+      "msp_id": "0000249_V00",
+      "msp_file_name": "0000249_V00.h5",
+      "scan_id": "MTR_030",
+      "subject_id": 249,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": true
+    },
+    {
+      "id": 4,
+      "file_name": "MTR_034.h5",
+      "msp_id": "0000117_V00",
+      "msp_file_name": "0000117_V00.h5",
+      "scan_id": "MTR_034",
+      "subject_id": 117,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": true
+    },
+    {
+      "id": 5,
+      "file_name": "MTR_048.h5",
+      "msp_id": "0000216_V00",
+      "msp_file_name": "0000216_V00.h5",
+      "scan_id": "MTR_048",
+      "subject_id": 216,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 6,
+      "file_name": "MTR_052.h5",
+      "msp_id": "0000179_V00",
+      "msp_file_name": "0000179_V00.h5",
+      "scan_id": "MTR_052",
+      "subject_id": 179,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 7,
+      "file_name": "MTR_065.h5",
+      "msp_id": "0000118_V00",
+      "msp_file_name": "0000118_V00.h5",
+      "scan_id": "MTR_065",
+      "subject_id": 118,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 8,
+      "file_name": "MTR_066.h5",
+      "msp_id": "0000148_V00",
+      "msp_file_name": "0000148_V00.h5",
+      "scan_id": "MTR_066",
+      "subject_id": 148,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 9,
+      "file_name": "MTR_079.h5",
+      "msp_id": "0000192_V00",
+      "msp_file_name": "0000192_V00.h5",
+      "scan_id": "MTR_079",
+      "subject_id": 192,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 10,
+      "file_name": "MTR_080.h5",
+      "msp_id": "0000168_V00",
+      "msp_file_name": "0000168_V00.h5",
+      "scan_id": "MTR_080",
+      "subject_id": 168,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 11,
+      "file_name": "MTR_096.h5",
+      "msp_id": "0000105_V00",
+      "msp_file_name": "0000105_V00.h5",
+      "scan_id": "MTR_096",
+      "subject_id": 105,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 12,
+      "file_name": "MTR_099.h5",
+      "msp_id": "0000011_V00",
+      "msp_file_name": "0000011_V00.h5",
+      "scan_id": "MTR_099",
+      "subject_id": 11,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 13,
+      "file_name": "MTR_120.h5",
+      "msp_id": "0000256_V00",
+      "msp_file_name": "0000256_V00.h5",
+      "scan_id": "MTR_120",
+      "subject_id": 256,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 14,
+      "file_name": "MTR_126.h5",
+      "msp_id": "0000120_V00",
+      "msp_file_name": "0000120_V00.h5",
+      "scan_id": "MTR_126",
+      "subject_id": 120,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 15,
+      "file_name": "MTR_144.h5",
+      "msp_id": "0000231_V00",
+      "msp_file_name": "0000231_V00.h5",
+      "scan_id": "MTR_144",
+      "subject_id": 231,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "RL"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 16,
+      "file_name": "MTR_156.h5",
+      "msp_id": "0000203_V00",
+      "msp_file_name": "0000203_V00.h5",
+      "scan_id": "MTR_156",
+      "subject_id": 203,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 17,
+      "file_name": "MTR_158.h5",
+      "msp_id": "0000169_V00",
+      "msp_file_name": "0000169_V00.h5",
+      "scan_id": "MTR_158",
+      "subject_id": 169,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 18,
+      "file_name": "MTR_173.h5",
+      "msp_id": "0000186_V00",
+      "msp_file_name": "0000186_V00.h5",
+      "scan_id": "MTR_173",
+      "subject_id": 186,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 19,
+      "file_name": "MTR_176.h5",
+      "msp_id": "0000024_V00",
+      "msp_file_name": "0000024_V00.h5",
+      "scan_id": "MTR_176",
+      "subject_id": 24,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 20,
+      "file_name": "MTR_178.h5",
+      "msp_id": "0000133_V00",
+      "msp_file_name": "0000133_V00.h5",
+      "scan_id": "MTR_178",
+      "subject_id": 133,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        156
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "RL"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 21,
+      "file_name": "MTR_188.h5",
+      "msp_id": "0000255_V00",
+      "msp_file_name": "0000255_V00.h5",
+      "scan_id": "MTR_188",
+      "subject_id": 255,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 22,
+      "file_name": "MTR_196.h5",
+      "msp_id": "0000106_V00",
+      "msp_file_name": "0000106_V00.h5",
+      "scan_id": "MTR_196",
+      "subject_id": 106,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 23,
+      "file_name": "MTR_198.h5",
+      "msp_id": "0000163_V00",
+      "msp_file_name": "0000163_V00.h5",
+      "scan_id": "MTR_198",
+      "subject_id": 163,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 24,
+      "file_name": "MTR_199.h5",
+      "msp_id": "0000193_V00",
+      "msp_file_name": "0000193_V00.h5",
+      "scan_id": "MTR_199",
+      "subject_id": 193,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "RL"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 25,
+      "file_name": "MTR_218.h5",
+      "msp_id": "0000096_V00",
+      "msp_file_name": "0000096_V00.h5",
+      "scan_id": "MTR_218",
+      "subject_id": 96,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 26,
+      "file_name": "MTR_219.h5",
+      "msp_id": "0000252_V00",
+      "msp_file_name": "0000252_V00.h5",
+      "scan_id": "MTR_219",
+      "subject_id": 252,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 27,
+      "file_name": "MTR_221.h5",
+      "msp_id": "0000191_V00",
+      "msp_file_name": "0000191_V00.h5",
+      "scan_id": "MTR_221",
+      "subject_id": 191,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 28,
+      "file_name": "MTR_223.h5",
+      "msp_id": "0000157_V00",
+      "msp_file_name": "0000157_V00.h5",
+      "scan_id": "MTR_223",
+      "subject_id": 157,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        144
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "RL"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 29,
+      "file_name": "MTR_224.h5",
+      "msp_id": "0000062_V00",
+      "msp_file_name": "0000062_V00.h5",
+      "scan_id": "MTR_224",
+      "subject_id": 62,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 30,
+      "file_name": "MTR_227.h5",
+      "msp_id": "0000064_V00",
+      "msp_file_name": "0000064_V00.h5",
+      "scan_id": "MTR_227",
+      "subject_id": 64,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "RL"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 31,
+      "file_name": "MTR_235.h5",
+      "msp_id": "0000116_V00",
+      "msp_file_name": "0000116_V00.h5",
+      "scan_id": "MTR_235",
+      "subject_id": 116,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 32,
+      "file_name": "MTR_237.h5",
+      "msp_id": "0000233_V00",
+      "msp_file_name": "0000233_V00.h5",
+      "scan_id": "MTR_237",
+      "subject_id": 233,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 33,
+      "file_name": "MTR_240.h5",
+      "msp_id": "0000080_V00",
+      "msp_file_name": "0000080_V00.h5",
+      "scan_id": "MTR_240",
+      "subject_id": 80,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 34,
+      "file_name": "MTR_241.h5",
+      "msp_id": "0000006_V00",
+      "msp_file_name": "0000006_V00.h5",
+      "scan_id": "MTR_241",
+      "subject_id": 6,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 35,
+      "file_name": "MTR_244.h5",
+      "msp_id": "0000016_V00",
+      "msp_file_name": "0000016_V00.h5",
+      "scan_id": "MTR_244",
+      "subject_id": 16,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "RL"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    },
+    {
+      "id": 36,
+      "file_name": "MTR_248.h5",
+      "msp_id": "0000124_V00",
+      "msp_file_name": "0000124_V00.h5",
+      "scan_id": "MTR_248",
+      "subject_id": 124,
+      "timepoint": 0,
+      "voxel_spacing": [
+        0.3125,
+        0.3125,
+        0.8
+      ],
+      "matrix_shape": [
+        512,
+        512,
+        160
+      ],
+      "orientation": [
+        "SI",
+        "AP",
+        "LR"
+      ],
+      "num_echoes": 2,
+      "inspected": false
+    }
+  ],
+  "annotations": [
+    {
+      "id": 1,
+      "image_id": 1,
+      "category_id": 6,
+      "tissue_id": 1,
+      "bbox": [
+        304.0,
+        297.0,
+        87.0,
+        20.0,
+        35.0,
+        20.0
+      ],
+      "confidence": 2.0,
+      "labeler": 2
+    },
+    {
+      "id": 2,
+      "image_id": 1,
+      "category_id": 12,
+      "tissue_id": 5,
+      "bbox": [
+        126.0,
+        81.0,
+        39.0,
+        99.0,
+        45.0,
+        56.0
+      ],
+      "confidence": 4.0,
+      "labeler": 2
+    },
+    {
+      "id": 3,
+      "image_id": 2,
+      "category_id": 6,
+      "tissue_id": 1,
+      "bbox": [
+        262.0,
+        226.0,
+        87.0,
+        50.0,
+        93.0,
+        34.0
+      ],
+      "confidence": 3.0,
+      "labeler": 2
+    },
+    {
+      "id": 4,
+      "image_id": 2,
+      "category_id": 8,
+      "tissue_id": 1,
+      "bbox": [
+        296.0,
+        165.0,
+        73.0,
+        30.0,
+        13.0,
+        21.0
+      ],
+      "confidence": 3.0,
+      "labeler": 2
+    },
+    {
+      "id": 5,
+      "image_id": 2,
+      "category_id": 13,
+      "tissue_id": 5,
+      "bbox": [
+        166.0,
+        85.0,
+        51.0,
+        81.0,
+        49.0,
+        34.0
+      ],
+      "confidence": 4.0,
+      "labeler": 2
+    },
+    {
+      "id": 6,
+      "image_id": 2,
+      "category_id": 12,
+      "tissue_id": 4,
+      "bbox": [
+        258.0,
+        149.0,
+        70.0,
+        16.0,
+        44.0,
+        12.0
+      ],
+      "confidence": 4.0,
+      "labeler": 2
+    },
+    {
+      "id": 7,
+      "image_id": 2,
+      "category_id": 13,
+      "tissue_id": 4,
+      "bbox": [
+        285.0,
+        186.0,
+        84.0,
+        23.0,
+        86.0,
+        28.0
+      ],
+      "confidence": 3.0,
+      "labeler": 2
+    },
+    {
+      "id": 8,
+      "image_id": 2,
+      "category_id": 12,
+      "tissue_id": 6,
+      "bbox": [
+        284.0,
+        182.0,
+        89.0,
+        38.0,
+        132.0,
+        23.0
+      ],
+      "confidence": 2.0,
+      "labeler": 2
+    },
+    {
+      "id": 9,
+      "image_id": 2,
+      "category_id": 16,
+      "tissue_id": -1,
+      "bbox": [
+        73.0,
+        98.0,
+        40.0,
+        200.0,
+        66.0,
+        69.0
+      ],
+      "confidence": 4.0,
+      "labeler": 2
+    },
+    {
+      "id": 10,
+      "image_id": 3,
+      "category_id": 6,
+      "tissue_id": 1,
+      "bbox": [
+        278.0,
+        283.0,
+        87.0,
+        49.0,
+        80.0,
+        39.0
+      ],
+      "confidence": 3.0,
+      "labeler": 2
+    },
+    {
+      "id": 11,
+      "image_id": 3,
+      "category_id": 2,
+      "tissue_id": 1,
+      "bbox": [
+        NaN,
+        NaN,
+        NaN,
+        NaN,
+        NaN,
+        NaN
+      ],
+      "confidence": 0.0,
+      "labeler": 2
+    },
+    {
+      "id": 12,
+      "image_id": 3,
+      "category_id": 8,
+      "tissue_id": 1,
+      "bbox": [
+        300.0,
+        220.0,
+        113.0,
+        40.0,
+        127.0,
+        18.0
+      ],
+      "confidence": 2.0,
+      "labeler": 2
+    },
+    {
+      "id": 13,
+      "image_id": 3,
+      "category_id": 2,
+      "tissue_id": 1,
+      "bbox": [
+        288.0,
+        241.0,
+        28.0,
+        8.0,
+        48.0,
+        14.0
+      ],
+      "confidence": 3.0,
+      "labeler": 2
+    },
+    {
+      "id": 14,
+      "image_id": 3,
+      "category_id": 6,
+      "tissue_id": 1,
+      "bbox": [
+        173.0,
+        188.0,
+        44.0,
+        108.0,
+        53.0,
+        35.0
+      ],
+      "confidence": 3.0,
+      "labeler": 2
+    },
+    {
+      "id": 15,
+      "image_id": 3,
+      "category_id": 11,
+      "tissue_id": 2,
+      "bbox": [
+        232.0,
+        214.0,
+        71.0,
+        162.0,
+        128.0,
+        28.0
+      ],
+      "confidence": 3.0,
+      "labeler": 2
+    },
+    {
+      "id": 16,
+      "image_id": 3,
+      "category_id": 13,
+      "tissue_id": 4,
+      "bbox": [
+        282.0,
+        250.0,
+        93.0,
+        35.0,
+        92.0,
+        34.0
+      ],
+      "confidence": 3.0,
+      "labeler": 2
+    },
+    {
+      "id": 17,
+      "image_id": 3,
+      "category_id": 12,
+      "tissue_id": 6,
+      "bbox": [
+        302.0,
+        220.0,
+        91.0,
+        23.0,
+        110.0,
+        29.0
+      ],
+      "confidence": 2.0,
+      "labeler": 2
+    },
+    {
+      "id": 18,
+      "image_id": 3,
+      "category_id": 13,
+      "tissue_id": 4,
+      "bbox": [
+        266.0,
+        262.0,
+        36.0,
+        32.0,
+        68.0,
+        28.0
+      ],
+      "confidence": 3.0,
+      "labeler": 2
+    },
+    {
+      "id": 19,
+      "image_id": 3,
+      "category_id": 12,
+      "tissue_id": 6,
+      "bbox": [
+        294.0,
+        228.0,
+        36.0,
+        20.0,
+        93.0,
+        28.0
+      ],
+      "confidence": 3.0,
+      "labeler": 2
+    },
+    {
+      "id": 20,
+      "image_id": 3,
+      "category_id": 12,
+      "tissue_id": 5,
+      "bbox": [
+        198.0,
+        134.0,
+        60.0,
+        57.0,
+        36.0,
+        45.0
+      ],
+      "confidence": 3.0,
+      "labeler": 2
+    },
+    {
+      "id": 21,
+      "image_id": 3,
+      "category_id": 12,
+      "tissue_id": 4,
+      "bbox": [
+        191.0,
+        145.0,
+        58.0,
+        106.0,
+        87.0,
+        47.0
+      ],
+      "confidence": 3.0,
+      "labeler": 2
+    },
+    {
+      "id": 22,
+      "image_id": 3,
+      "category_id": 16,
+      "tissue_id": -1,
+      "bbox": [
+        157.0,
+        252.0,
+        35.0,
+        101.0,
+        62.0,
+        37.0
+      ],
+      "confidence": 3.0,
+      "labeler": 2
+    },
+    {
+      "id": 23,
+      "image_id": 4,
+      "category_id": 16,
+      "tissue_id": -1,
+      "bbox": [
+        10.0,
+        124.0,
+        18.0,
+        308.0,
+        171.0,
+        97.0
+      ],
+      "confidence": 4.0,
+      "labeler": 2
+    }
+  ]
+}
