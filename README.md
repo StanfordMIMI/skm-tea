@@ -244,9 +244,33 @@ on for benchmarking and communicating our results.
 If you want to make a new version of the dataset, please follow the rules for versioning detailed
 here (link to be added). Please also run your versioning by both Arjun Desai (arjundd@stanford.edu) and Akshay Chaudhari (akshaysc@stanford.edu).
 
-The most up-to-date version of the qDESS dataset is v0.0.1.
+The most up-to-date version of the qDESS dataset is v0.1.0.
 
 Version history is described below. If new versions are made, add details appropriately
+
+### v0.1.0
+--------------------------------
+Date Released: March 8, 2021
+
+Splits are the same as v0.0.2. Image data can be found at:
+
+```
+/bmrNAS/people/arjun/data/qdess_knee_2020/image_files_v0.1
+```
+
+Changelist:
+  * Segmentation masks in the test set were corrected by two additional annotators.
+  The following segmentations were changed: `MTR_005`, `MTR_030`, `MTR_066`, `MTR_134`, `MTR_219`, `MTR_248`.
+
+  * Additional bounding box annotations
+
+Data Distribution:
+
+            # Scans    % Male    % Female  Age (mean +/- std)      # BBoxes
+    -----  ---------  --------  ----------  --------------------  ----------
+    train         86      53.5        46.5  43.9 +/- 18.2                242
+    val           33      54.5        45.5  44.5 +/- 18.1                104
+    test          36      72.2        27.8  42.1 +/- 15.8                130
 
 ### v0.0.2
 --------------------------------
