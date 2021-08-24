@@ -1,26 +1,50 @@
 # 2020 Stanford qDESS Knee Dataset
-authors: Arjun Desai (arjundd at stanford dot edu), Elka Rubin, Andrew Schmidt, Akshay Chaudhari
+Authors: Arjun Desai (arjundd at stanford dot edu), Andrew Schmidt, Elka Rubin, Akshay Chaudhari & collaborators
 
-This folder contains the data and annotations for the 2020 Stanford qDESS knee dataset.
+Version: v1.0.0
+
+This repository contains the annotations for the 2021 Stanford Knee MRI Multi-Task Evaluation (SKM-TEA) dataset, a dataset that provides paired raw quantitative MRI (qMRI) data, image data, and dense labels of tissues and pathology.
+
+This dataset enables two benchmarking tracks:
+
+  1. `Raw Data` Track: Benchmarking related to MRI reconstruction and analysis on images generated from raw MRI data (i.e. k-space)
+  2. `DICOM` Track: Benchmarking related to image analysis on scanner-generated DICOM images.
+
+Details on the data to use for each track are provided below.
+
+Data Link: Coming soon!
+
+## Data Overview
+This dataset consists of raw k-space and image data acquired using quantitative double-echo-steady-state (qDESS) MRI knee scans of patients at Stanford Healthcare. Images were manually segmented for 4 tissues: (1) Patellar Cartilage, (2) Femoral Cartilage, (3) Tibial Cartilage, and (4) Meniscus. Images were also manually annotated with bounding boxes for pathology documented in radiologist reports.
 
 ## Directories
 
-- `image_files/`: Contains images files (echo1, echo2, root-mean-square, segmentations).
+All data and annotations are stored in the directory structure shown below. Details of how data in each folder should be used are provided in the Tracks below.
+
 - `annotations/`: Versioned splits of train/val/test data. See "Versioning" for more info.
+- `files_recon_calib-24/`: Data related to the `Raw Data` track in HDF5 format
+- `image_files/`: Data related to the `DICOM` track in HDF5 format
+- `dicoms/`: Scanner-generated DICOM files. This should be used for visualization purposes only.
+- `segmentation_masks/raw-data-track`: Ground truth segmentations (in Nifti format) for `Raw Data` track
+- `segmentation_masks/dicom-track`: Ground truth segmentations (in Nifti format) for `DICOM` track
+- `all_metadata.csv`: De-identified DICOM metadata for each scan
 
-For details on these, see sections Image Files and Annotations below
+All `.tar.gz` files should be extracted using 
+```bash
+tar -xvzf tar-file.tar.gz
+```
 
-## Image Files
-We loosely define image data as all data derived from the GE DICOMS.
-This includes the original dicom data (echo 1, echo 2), derived entities (root-mean-square of 2 echos),
-as well as segmentations performed by the 3D Lab on the dicoms.
+For details on how data in each directory is used, see [Benchmarking Tracks](#benchmarking-tracks).
 
-All image data are stored in the `image_files/` directory.
-Each scan is represented by an HDF5 file with the keys (and shape, if applicable) below:
+## Benchmarking Tracks
+### `DICOM` Track
+The `DICOM` benchmarking track uses scanner-generated DICOM images as the input for image segmentation and detection tasks.
+
+All DICOM pixel data has been extracted are stored in the `image_files/` directory.
+Each scan is represented by an HDF5 file with the schema (and shape, if applicable) below:
 
     | "echo1" (X x Y x Z): Echo 1 of the qDESS scan
     | "echo2" (X x Y x Z): Echo 2 of the qDESS scan
-    | "rms" (X x Y x Z): Root-mean-square of the two echos (sqrt(echo1.^2 + echo2.^2))
     | "seg" (X x Y x Z x 6): One-hot encoded segmentations for 6 classes. See order below.
     | "stats": A dictionary with statistics (mean, standard dev., min, max) of the corresponding volume
         | "echo1"
@@ -30,13 +54,14 @@ Each scan is represented by an HDF5 file with the keys (and shape, if applicable
             | "max": A scalar - max(echo1)
         | "echo2"
             ... Like structure for echo1 stats
-        | "rms"
-            ... Like structure for echo1 stats
+        | "rss"
+            ... Like structure for echo1 stats, but for root-sum-of-squares of the two echos
+            ... (i.e. sqrt(echo1**2 + echo2**2))
 
 *Note*: Shapes are given in the `(X,Y,Z)` medical format, where `X` corresponds to the rows,
 `Y` corresponds to the columns, `Z` corresponds to the depth, etc.
 
-### Segmentations
+#### Segmentations
 As mentioned above, the `seg` key holds one-hot encoded segmentations of key soft tissues
 in the knee. The order of these segmentations is as follows:
 
@@ -49,19 +74,24 @@ in the knee. The order of these segmentations is as follows:
 
 You may find it useful to combine the medial/lateral components of tibial cartilage and the meniscus.
 
-## Reconstructions
-While the DICOM image data is useful for image-based tasks, we may also want to use this dataset for training and evaluating reconstruction algorithms. This dataset also exposes the raw kspace data and potential target images which have been quality checked. The details are provided below.
+These segmentations are also available in the Nifti format in `segmentation_masks/dicom-track/`.
 
-All qDESS data was acquired with 2x1 parallel imaging using 8 coils with elliptical sampling. Missing data was subsequently estimated using ARC (GE) with the GE Orchestra MATLAB SDK (version TBD). This data is considered the fully-sampled kspace.
+#### Bounding Boxes
+See [Annotations and Dataset Splits](#annotations-and-dataset-splits).
 
-### 2D Hybrid Dimension Reconstructions
+### `Raw Data` Track
+While the DICOM image data is useful for image-based tasks, we may also want to use this dataset for training and evaluating reconstruction algorithms and image analysis on reconstructed outputs. This dataset also exposes the raw kspace data and SENSE-generated target images which have been quality checked.
+
+All qDESS data was acquired with 2x1 parallel imaging with elliptical sampling. Missing k-space data was subsequently estimated using ARC (GE) with the GE Orchestra MATLAB SDK (version TBD). This data is considered the fully-sampled kspace.
+
+#### 2D Hybrid Dimension Reconstructions
 qDESS is a 3D sequence, but many reconstruction algorithms reconstruct 2D slices to reduce the computation overload of 3D operations.
 
 The 3D kspace `(kx,ky,kz)` is partially reconstructed using the 1D IFFT along the readout direction (`kx`). The resulting hybrid kspace is of dimensions `(x, ky, kz)`. 2D slices to reconstruct are in the `(ky, kz)` plane.
 
-The image is estimated using 2D SENSE reconstruction. Sensitivity maps were estimated using the JSENSE algorithm (sigpy) with a kernel width of 6 and a 24x24 calibration region per slice.
+The image is estimated using 2D SENSE reconstruction. K-space was zero-padded following the ZIP2 protocol prior to reconstruction to align SENSE-reconstructed images with dimensions of the DICOM images. Sensitivity maps were estimated using the JSENSE algorithm (sigpy) with a kernel width of 6 and a 24x24 calibration region per slice.
 
-We have added the data for this scenario in the `files_recon_calib-24` folder. Data for each scan is stored as an HDF% file with the following keys:
+Data for this track can be found in the `files_recon_calib-24` folder. Data for each scan is stored as an HDF5 file with the following schema:
 
     | "kspace" (Nx x Ny x Nz x # echos x # coils): Hybrid kspace (x,ky,kz) 
     | "maps" (Nx x Ny x Nz x # coils x # maps): Sensitivity maps
@@ -69,7 +99,11 @@ We have added the data for this scenario in the `files_recon_calib-24` folder. D
 
 where `# echos = 2` and `# maps = 1`. `# coils` is typically 8 or 16. All values are complex (np.complex64).
 
+#### Segmentations
+Segmentations corresponding to SENSE-based image reconstructions can be found in `segmentation_masks/raw-data-track`. The order of the segmentation masks are the same as in the DICOM track.
 
+#### Bounding Boxes
+See [Annotations and Dataset Splits](#annotations-and-dataset-splits).
 ## Annotations and Dataset Splits
 Information for all dataset splits can be found in the annotation files, which are json files stored
 in a similar manner to the [COCO annotation format](https://www.immersivelimit.com/tutorials/create-coco-annotations-from-scratch).
@@ -91,7 +125,7 @@ We break down the different components of the dictionary below:
 The “info” section contains high level information about the split.
 ```
   "info": {
-    "contributor": "Arjun Desai & Akshay Chaudhari",
+    "contributor": "Arjun Desai, Elka Rubin, Andrew Schmidt, Akshay Chaudhari",
     "description": "2020 Stanford qDESS Dataset - test",
     "year": "2020",
     "date_created": "2020-10-16 22:51:12 PDT",
@@ -236,66 +270,3 @@ scans: List[Dict]= annotations["images"]
 # ====================
 anns: List[Dict] = annotations["annotations"]
 ```
-
-## Versioning
-Medical data continues to grow incrementally and it is useful to have fixed versions to look back 
-on for benchmarking and communicating our results.
-
-If you want to make a new version of the dataset, please follow the rules for versioning detailed
-here (link to be added). Please also run your versioning by both Arjun Desai (arjundd at stanford dot edu) and Akshay Chaudhari (akshaysc at stanford dot edu).
-
-The most up-to-date version of the qDESS dataset is v0.1.0.
-
-Version history is described below. If new versions are made, add details appropriately
-
-### v0.1.0
---------------------------------
-Date Released: March 8, 2021
-
-Splits are the same as v0.0.2. Image data can be found at:
-
-```
-/bmrNAS/people/arjun/data/qdess_knee_2020/image_files_v0.1
-```
-
-Changelist:
-  * Segmentation masks in the test set were corrected by two additional annotators.
-  The following segmentations were changed: `MTR_005`, `MTR_030`, `MTR_066`, `MTR_134`, `MTR_219`, `MTR_248`.
-
-  * Additional bounding box annotations
-
-Data Distribution:
-
-            # Scans    % Male    % Female  Age (mean +/- std)      # BBoxes
-    -----  ---------  --------  ----------  --------------------  ----------
-    train         86      53.5        46.5  43.9 +/- 18.2                242
-    val           33      54.5        45.5  44.5 +/- 18.1                104
-    test          36      72.2        27.8  42.1 +/- 15.8                130
-
-### v0.0.2
---------------------------------
-Date Released: November 24, 2020
-
-Splits are the same as v0.0.1. Additional bounding box annotations were added.
-
-            # Scans    % Male    % Female  Age (mean +/- std)      # BBoxes
-    -----  ---------  --------  ----------  --------------------  ----------
-    train         86      53.5        46.5  43.9 +/- 18.2                239
-    val           33      54.5        45.5  44.5 +/- 18.1                102
-    test          36      72.2        27.8  42.1 +/- 15.8                130
-
-### v0.0.1
---------------------------------
-Date Released: October 16, 2020
-
-This is the first version of the qDESS dataset.
-
-Examples in the test split have received arthroscopic surgery (to establish gold standard injury reports) 
-and were evaluated by 2 msk rads. Training and validation splits were pseudo randomly determined from the remaining scans
-while approximiately balancing age and sex. Details are shown below:
-
-            # Scans    % Male    % Female  Age (mean +/- std)      # BBoxes
-    -----  ---------  --------  ----------  --------------------  ----------
-    train         86      53.5        46.5  43.9 +/- 18.2                207
-    val           33      54.5        45.5  44.5 +/- 18.1                 88
-    test          36      72.2        27.8  42.1 +/- 15.8                 23
