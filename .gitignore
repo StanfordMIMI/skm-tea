@@ -7,3 +7,7 @@
 
 # Excel files
 *.xlsx
+
+# IDE
+**/.vscode
+**/.idea
