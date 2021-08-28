@@ -1,4 +1,4 @@
-# 2020 Stanford qDESS Knee Dataset
+# Stanford Knee MRI Multi-Task Evaluation (SKM-TEA) Dataset
 Authors: Arjun Desai (arjundd at stanford dot edu), Andrew Schmidt, Elka Rubin, Akshay Chaudhari & collaborators
 
 Version: v1.0.0
