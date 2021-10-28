@@ -161,7 +161,11 @@ QDESS_SEGMENTATION_CATEGORIES = [
 
 
 def get_paths(version):
-    data_dir = _PATHS[version]
+    if version in _PATHS:
+        data_dir = _PATHS[version]
+    else:
+        aliases = {alias: base for base, aliases in _VERSION_ALIASES.items() for alias in aliases}
+        data_dir = _PATHS[aliases[version]]
     return SimpleNamespace(
         metadata_csv=f"{data_dir}/all_metadata.csv",
         mask_gradwarp_corrected=f"{data_dir}/segmentation_masks/raw-data-track",
@@ -359,7 +363,10 @@ def _build_predefined_splits():
                 os.path.join(paths.ann_dir, f"{split}.json"),
             )
             for v_alias in _VERSION_ALIASES.get(version, []):
-                splits[f"skmtea_{v_alias}_{split}"] = name
+                splits[f"skmtea_{v_alias}_{split}"] = (
+                    None,
+                    os.path.join(paths.ann_dir, f"{split}.json"),
+                )
     return splits
 
 
@@ -369,6 +376,7 @@ def register_skm_tea(name, json_file, metadata: Dict[str, Any] = None):
     paths = get_paths(version)
     recon_dir = _path_mgr.get_local_path(paths.recon_files)
     image_dir = _path_mgr.get_local_path(paths.image_files)
+    mask_gradwarp_corrected_dir = _path_mgr.get_local_path(paths.mask_gradwarp_corrected)
     DatasetCatalog.register(
         name,
         lambda calib_size=None: load_qdess_json(
@@ -380,27 +388,25 @@ def register_skm_tea(name, json_file, metadata: Dict[str, Any] = None):
 
     # 2. Optionally, add metadata about this dataset,
     # since they might be useful in evaluation, visualization or logging
-    if metadata is None:
-        metadata = {}
+    base_metadata = get_qdess_instances_meta(version=version, group_instances_by=None)
+    if metadata is not None:
+        base_metadata.update(metadata)
+    metadata = base_metadata
     MetadataCatalog.get(name).set(
         json_file=json_file,
         recon_dir=recon_dir,
         image_dir=image_dir,
         raw_data_track_dir=recon_dir,
         dicom_track_dir=image_dir,
+        mask_gradwarp_corrected_dir=mask_gradwarp_corrected_dir,
         evaluator_type="SkmTeaEvaluator",
-        func=lambda group_by: get_qdess_instances_meta(group_instances_by=group_by),
         **metadata,
     )
 
 
 def register_all_skm_tea():
     for name, init_args in _build_predefined_splits().items():
-        if isinstance(init_args, str):
-            DatasetCatalog.register(name, init_args)
-            continue
-
-        (_, ann_file) = init_args
+        _, ann_file = init_args
         register_skm_tea(name, json_file=ann_file)
 
 

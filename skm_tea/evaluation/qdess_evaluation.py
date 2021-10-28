@@ -23,12 +23,12 @@ from ss_recon.evaluation.scan_evaluator import ScanEvaluator
 from ss_recon.evaluation.seg_evaluation import SemSegEvaluator
 from ss_recon.metrics.collection import MetricCollection
 from ss_recon.ops import complex as cplx
-from ss_recon.utils import env
 from ss_recon.utils.general import move_to_device
 from tqdm import tqdm
 
 from skm_tea.data.register import seg_categories_to_idxs
 from skm_tea.metrics.qmri import QuantitativeKneeMRI
+from skm_tea.utils import env
 
 
 class QDessEvaluator(ScanEvaluator):
@@ -345,7 +345,7 @@ class QDessEvaluator(ScanEvaluator):
             # with h5py.File(seg_file, "r") as f:
             #     gt_seg = f["seg"][()]
             gt_seg = dm.NiftiReader().load(
-                os.path.join(self._metadata.mask_gw_corr_dir, scan_id + ".nii.gz")
+                os.path.join(self._metadata.mask_gradwarp_corrected_dir, scan_id + ".nii.gz")
             )
             gt_seg = oF.categorical_to_one_hot(
                 gt_seg.A.astype(np.int64), background=0, channel_dim=-1
