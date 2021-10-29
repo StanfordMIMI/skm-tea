@@ -18,12 +18,13 @@ from skm_tea.data.register import seg_categories_to_idxs
 from skm_tea.data.transform import qDESSDataTransform
 from skm_tea.utils import env
 
-__all__ = ["qDESSDataset", "qDESSImageDataset"]
+__all__ = ["SkmTeaRawDataset", "SkmTeaDicomDataset"]
 logger = logging.getLogger(__name__)
 
 
-class qDESSDataset(SliceData):
-    """
+class SkmTeaRawDataset(SliceData):
+    """The dataset to use for the SKM-TEA Raw Data Track.
+
     Attributes:
         split (str): The dataset split. One of ``['train', 'val', 'test']``.
         echo_type (str): The type of echo to load. One of
@@ -356,31 +357,31 @@ class qDESSDataset(SliceData):
         return seeds
 
 
-class qDESSImageDataset(qDESSDataset):
+class SkmTeaDicomDataset(SkmTeaRawDataset):
     """The dataset to use for the SKM-TEA DICOM Track.
 
     This dataset handles loading images and labels related to the DICOM Track.
     Images and segmentations are stored in the HDF5 format. Detection annotations
     are read in from corresponding annotation files.
 
-    Most of the functionality is shared with :class:`qDESSDataset`.
+    Most of the functionality is shared with :class:`SkmTeaRawDataset`.
 
     Args:
-        dataset_dicts (List[Dict]): See :class:`qDESSDataset`.
-        transform (Callable): See :class:`qDESSDataset`.
-        split (str): See :class:`qDESSDataset`.
-        include_metadata (bool, optional): See :class:`qDESSDataset`.
+        dataset_dicts (List[Dict]): See :class:`SkmTeaRawDataset`.
+        transform (Callable): See :class:`SkmTeaRawDataset`.
+        split (str): See :class:`SkmTeaRawDataset`.
+        include_metadata (bool, optional): See :class:`SkmTeaRawDataset`.
         tasks (Collection[str], optional): Tasks to return data for.
-            Unlike :class:`qDESSDataset`, ``"recon"`` is not supported.
+            Unlike :class:`SkmTeaRawDataset`, ``"recon"`` is not supported.
         seg_classes (Sequence[Union[int, Sequence[int]]]): Integer labels
             for segmentation classes to load.
         keys_to_load (Collection[str]): Keys to load from DICOM Track
             HDF5 files.
-        return_batches (bool, optional): See :class:`qDESSDataset`.
-        batch_size (int, optional): See :class:`qDESSDataset`.
+        return_batches (bool, optional): See :class:`SkmTeaRawDataset`.
+        batch_size (int, optional): See :class:`SkmTeaRawDataset`.
         echo_type (str, optional): The input image type. One of
             ``["echo1", "echo2", "rss", "echo1-echo2-mc"]``.
-        cache_files (bool, optional): See :class:`qDESSDataset`.
+        cache_files (bool, optional): See :class:`SkmTeaRawDataset`.
         orientation (str, optional): The orientation of the scan for
             segmentation. One of ``["axial", "coronal", "sagittal"]``.
         suppress_fluid (bool, optional): If ``True``, suppress fluid regions

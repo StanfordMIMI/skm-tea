@@ -5,13 +5,13 @@ from ss_recon.data.transforms.subsample import build_mask_func
 from torch.utils.data import DataLoader
 
 from skm_tea.data.collate import default_collate
-from skm_tea.data.dataset import qDESSDataset, qDESSImageDataset
+from skm_tea.data.dataset import SkmTeaDicomDataset, SkmTeaRawDataset
 from skm_tea.data.transform import qDESSDataTransform
 
 __all__ = ["qDESSDataModule"]
 
 
-_TRACKS_TO_DATASETS = {"raw_data": qDESSDataset, "dicom": qDESSImageDataset}
+_TRACKS_TO_DATASETS = {"raw_data": SkmTeaRawDataset, "dicom": SkmTeaDicomDataset}
 _PRECOMPUTED_MASKS_CACHE_DIR = "cache://skm-tea/precomputed-masks"
 
 

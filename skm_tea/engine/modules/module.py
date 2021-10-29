@@ -16,16 +16,16 @@ from ss_recon.ops import complex as cplx
 
 from skm_tea.data.data_module import qDESSDataModule
 from skm_tea.engine.modules.recon import ReconModule
-from skm_tea.evaluation.qdess_evaluation import QDessEvaluator
+from skm_tea.evaluation.qdess_evaluation import SkmTeaEvaluator
 from skm_tea.losses import SegLossComputer
 from skm_tea.modeling.build import build_model
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["qDESSModule", "qDESSSemSegModel"]
+__all__ = ["SkmTeaModule", "SkmTeaSemSegModule"]
 
 
-class qDESSModule(ReconModule):
+class SkmTeaModule(ReconModule):
     def __init__(self, cfg: CfgNode, num_parallel=1, eval_on_cpu: bool = False, **kwargs):
         self.tasks = cfg.MODEL.TASKS
 
@@ -156,7 +156,7 @@ class qDESSModule(ReconModule):
 
         if self._stage == "test":
             evaluators.append(
-                QDessEvaluator(
+                SkmTeaEvaluator(
                     dataset_name,
                     cfg,
                     distributed=distributed,
@@ -213,7 +213,9 @@ class qDESSModule(ReconModule):
         return DatasetEvaluators(evaluators)
 
 
-class qDESSSemSegModel(qDESSModule):
+class SkmTeaSemSegModule(SkmTeaModule):
+    _ALIASES = ["qDESSSemSegModel"]
+
     def __init__(self, cfg, num_parallel=1, eval_on_cpu: bool = False):
         if cfg.MODEL.TASKS != ("sem_seg",):
             raise ValueError(f"{type(self).__name__} only supports semantic segmentation.")

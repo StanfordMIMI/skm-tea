@@ -28,7 +28,7 @@ _VERSION_ALIASES = {"v1.0.0": ["v1"]}
 # Metadata
 # ==============================================
 
-QDESS_DETECTION_CATEGORIES = [
+SKMTEA_DETECTION_CATEGORIES = [
     {
         "color": [220, 20, 60],
         "supercategory": "Meniscal Tear",
@@ -143,7 +143,7 @@ QDESS_DETECTION_CATEGORIES = [
     },
 ]
 
-QDESS_SEGMENTATION_CATEGORIES = [
+SKMTEA_SEGMENTATION_CATEGORIES = [
     {"color": [64, 170, 64], "id": 0, "name": "Patellar Cartilage", "abbrev": "pc"},
     {"color": [152, 251, 152], "id": 1, "name": "Femoral Cartilage", "abbrev": "fc"},
     {"color": [208, 229, 228], "id": 2, "name": "Tibial Cartilage (Medial)", "abbrev": "tc-m"},
@@ -183,7 +183,7 @@ def _get_version_from_name(name):
 
 # TODO: probably best to pass a json file here to make sure we can keep up with
 # the ever changing annotation files. Segmentations should stay constant though.
-def get_qdess_instances_meta(version, group_instances_by=None) -> Dict[str, Any]:
+def get_skmtea_instances_meta(version, group_instances_by=None) -> Dict[str, Any]:
     """
 
     Args:
@@ -195,13 +195,13 @@ def get_qdess_instances_meta(version, group_instances_by=None) -> Dict[str, Any]
     path_manager = env.get_path_manager()
 
     if group_instances_by is None:
-        thing_ids = [k["id"] for k in QDESS_DETECTION_CATEGORIES]
-        thing_classes = [k["name"] for k in QDESS_DETECTION_CATEGORIES]
-        thing_colors = [k["color"] for k in QDESS_DETECTION_CATEGORIES]
+        thing_ids = [k["id"] for k in SKMTEA_DETECTION_CATEGORIES]
+        thing_classes = [k["name"] for k in SKMTEA_DETECTION_CATEGORIES]
+        thing_colors = [k["color"] for k in SKMTEA_DETECTION_CATEGORIES]
     elif group_instances_by == "supercategory":
         things = {
             k["supercategory_id"]: (k["supercategory"], k["color"])
-            for k in QDESS_DETECTION_CATEGORIES
+            for k in SKMTEA_DETECTION_CATEGORIES
         }
         thing_ids = list(things.keys())
         thing_classes = [v[0] for v in things.values()]
@@ -237,7 +237,7 @@ def get_qdess_instances_meta(version, group_instances_by=None) -> Dict[str, Any]
     return ret
 
 
-def load_qdess_json(
+def load_skmtea_annotations(
     json_file: str,
     dataset_name: str,
     recon_root: str = None,
@@ -334,8 +334,8 @@ def seg_categories_to_idxs(categories: Sequence[str]):
         Sequence[Union[int, Tuple[int]]]: Ordered indices or group of indices for
             segmentation classes.
     """
-    mappings = {k["abbrev"].lower(): k["id"] for k in QDESS_SEGMENTATION_CATEGORIES}
-    mappings.update({k["name"].lower(): k["id"] for k in QDESS_SEGMENTATION_CATEGORIES})
+    mappings = {k["abbrev"].lower(): k["id"] for k in SKMTEA_SEGMENTATION_CATEGORIES}
+    mappings.update({k["name"].lower(): k["id"] for k in SKMTEA_SEGMENTATION_CATEGORIES})
     idxs = []
     for cat in categories:
         if isinstance(cat, str):
@@ -379,7 +379,7 @@ def register_skm_tea(name, json_file, metadata: Dict[str, Any] = None):
     mask_gradwarp_corrected_dir = _path_mgr.get_local_path(paths.mask_gradwarp_corrected)
     DatasetCatalog.register(
         name,
-        lambda calib_size=None: load_qdess_json(
+        lambda calib_size=None: load_skmtea_annotations(
             json_file,
             name,
             calib_size=calib_size,
@@ -388,7 +388,7 @@ def register_skm_tea(name, json_file, metadata: Dict[str, Any] = None):
 
     # 2. Optionally, add metadata about this dataset,
     # since they might be useful in evaluation, visualization or logging
-    base_metadata = get_qdess_instances_meta(version=version, group_instances_by=None)
+    base_metadata = get_skmtea_instances_meta(version=version, group_instances_by=None)
     if metadata is not None:
         base_metadata.update(metadata)
     metadata = base_metadata

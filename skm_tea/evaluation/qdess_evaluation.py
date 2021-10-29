@@ -31,7 +31,7 @@ from skm_tea.metrics.qmri import QuantitativeKneeMRI
 from skm_tea.utils import env
 
 
-class QDessEvaluator(ScanEvaluator):
+class SkmTeaEvaluator(ScanEvaluator):
     """SKM-TEA evaluator for reconstruction, segmentation, and qMRI metrics."""
 
     def __init__(

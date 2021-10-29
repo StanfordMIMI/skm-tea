@@ -11,7 +11,7 @@ import torch
 from dosma.core.orientation import SAGITTAL
 from dosma.core.quant_vals import T2
 from dosma.tissues import FemoralCartilage, Meniscus, PatellarCartilage, TibialCartilage
-from ss_recon.metrics.metric import Metric
+from ss_recon.metrics import Metric
 from torchmetrics.utilities import reduce
 from tqdm import tqdm
 
@@ -19,11 +19,13 @@ logger = logging.getLogger(__name__)
 
 
 class QuantitativeKneeMRI(Metric):
-    """Metric for computing quantitative parameters over Knee MRI.
+    """Metric for computing quantitative MRI parameters for knee tissues.
 
-    If ``use_subregions`` is ``True``, tissues that are supported for subdivision by DOSMA are
-    subdivided into clinically relevant regions. DOSMA currently supports subdivision for femoral
-    cartilage, tibial cartilage, and patellar cartilage.
+    If ``use_subregions=True``, tissues that are supported for subdivision by DOSMA
+    are subdivided into clinically relevant regions. As of v0.1.0, DOSMA currently
+    supports subdivision for femoral cartilage, tibial cartilage, and patellar cartilage.
+
+    See :cls:`ss_recon.metrics.Metric` for argument details.
 
     Note:
         This metric does not preserve gradients. It should not be used for loss computation.
@@ -44,6 +46,16 @@ class QuantitativeKneeMRI(Metric):
         use_cpu: bool = False,
         output_dir: str = None,
     ):
+        """
+        Args:
+            subregions (bool, optional): If ``True``, femoral/tibial/patellar cartilage
+                are divided into relevant subregions using DOSMA.
+            channel_names (Sequence[str], optional): The ordered list of tissues to
+                process. This should correspond to channels in the segmentation mask.
+                Use ``'fc'`` for femoral cartilage, ``'tc'`` for tibial cartilage,
+                ``'pc'`` for patellar cartilage, and ``'men'`` for meniscus.
+            units (str, optional): Units for this metric.
+        """
         if (
             subregions
             and channel_names
