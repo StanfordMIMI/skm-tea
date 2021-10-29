@@ -2,7 +2,7 @@
 
 from skm_tea.engine.modules import base, module, recon
 from skm_tea.engine.modules.base import PLModule  # noqa: F401
-from skm_tea.engine.modules.module import qDESSModule, qDESSSemSegModel  # noqa: F401
+from skm_tea.engine.modules.module import SkmTeaModule, SkmTeaSemSegModule  # noqa: F401
 from skm_tea.engine.modules.recon import ReconModule  # noqa: F401
 
 __all__ = []

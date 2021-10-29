@@ -3,8 +3,8 @@ from skm_tea.engine.defaults import default_argument_parser, default_setup  # no
 from skm_tea.engine.modules import (  # noqa: F401
     PLModule,
     ReconModule,
-    qDESSModule,
-    qDESSSemSegModel,
+    SkmTeaModule,
+    SkmTeaSemSegModule,
 )
 from skm_tea.engine.trainer import PLDefaultTrainer  # noqa: F401
 
