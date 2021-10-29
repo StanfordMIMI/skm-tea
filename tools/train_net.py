@@ -24,8 +24,8 @@ from skm_tea.engine import (
     PLDefaultTrainer,
     default_argument_parser,
     default_setup,
-    qDESSModule,
-    qDESSSemSegModel,
+    SkmTeaModule,
+    SkmTeaSemSegModule,
 )
 
 try:
@@ -86,7 +86,7 @@ def main(args, pl_module=None):
 
     distributed_backend = "ddp" if num_gpus > 1 else None
     if pl_module is None:
-        pl_module = qDESSModule if "recon" in cfg.MODEL.TASKS else qDESSSemSegModel
+        pl_module = SkmTeaModule if "recon" in cfg.MODEL.TASKS else SkmTeaSemSegModule
     model = pl_module(cfg, num_parallel=num_gpus, eval_on_cpu=args.eval_on_cpu)
     trainer = PLDefaultTrainer(
         cfg,
