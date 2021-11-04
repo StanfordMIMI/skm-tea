@@ -14,7 +14,10 @@ test:
 	set -e
 	coverage run -m pytest tests/
 
-dev:
-	pip install --upgrade black coverage isort flake8 flake8-bugbear flake8-comprehensions pytest
+test-cov:
+	set -e
+	pytest tests/ --cov=./ --cov-report=xml
 
-all: autoformat test build-docs
+dev:
+	pip install --upgrade black coverage isort flake8 flake8-bugbear flake8-comprehensions pytest pre-commit
+	pre-commit install
