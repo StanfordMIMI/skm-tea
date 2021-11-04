@@ -22,10 +22,10 @@ from ss_recon.utils.env import supports_wandb
 from skm_tea import config  # noqa: F401 (required for setting default config)
 from skm_tea.engine import (
     PLDefaultTrainer,
-    default_argument_parser,
-    default_setup,
     SkmTeaModule,
     SkmTeaSemSegModule,
+    default_argument_parser,
+    default_setup,
 )
 
 try:

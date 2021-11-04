@@ -1,17 +1,50 @@
-#!/usr/bin/env python
-# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
-
 import os
+import sys
 from os import path
+from shutil import rmtree
 
-import torch
-import torchvision
-from setuptools import find_packages, setup
+from setuptools import Command, find_packages, setup
 
-torch_ver = [int(x) for x in torch.__version__.split(".")[:2]]
-assert [1, 5] <= torch_ver, "Requires torch >=1.5"
-tv_ver = [int(x) for x in torchvision.__version__.split(".")[:2]]
-assert [0, 6] <= tv_ver, "Requires torchvision >=0.6"
+here = os.path.abspath(os.path.dirname(__file__))
+
+
+class UploadCommand(Command):
+    """Support setup.py upload.
+    Adapted from https://github.com/robustness-gym/meerkat.
+    """
+
+    description = "Build and publish the package."
+    user_options = []
+
+    @staticmethod
+    def status(s):
+        """Prints things in bold."""
+        print("\033[1m{0}\033[0m".format(s))
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        try:
+            self.status("Removing previous builds…")
+            rmtree(os.path.join(here, "dist"))
+        except OSError:
+            pass
+
+        self.status("Building Source and Wheel (universal) distribution…")
+        os.system("{0} setup.py sdist bdist_wheel --universal".format(sys.executable))
+
+        self.status("Uploading the package to PyPI via Twine…")
+        os.system("twine upload dist/*")
+
+        self.status("Pushing git tags…")
+        os.system("git tag v{0}".format(get_version()))
+        os.system("git push --tags")
+
+        sys.exit()
 
 
 def get_version():
@@ -20,34 +53,18 @@ def get_version():
     version_line = [l.strip() for l in init_py if l.startswith("__version__")][0]  # noqa: E741
     version = version_line.split("=")[-1].strip().strip("'\"")
 
-    # The following is used to build release packages.
-    # Users should never use it.
-    suffix = os.getenv("SKMTEA_VERSION_SUFFIX", "")
-    version = version + suffix
-    if os.getenv("BUILD_NIGHTLY", "0") == "1":
-        from datetime import datetime
-
-        date_str = datetime.today().strftime("%y%m%d")
-        version = version + ".dev" + date_str
-
-        new_init_py = [l for l in init_py if not l.startswith("__version__")]  # noqa: E741
-        new_init_py.append('__version__ = "{}"\n'.format(version))
-        with open(init_py_path, "w") as f:
-            f.write("".join(new_init_py))
     return version
 
 
 setup(
-    name="skm_tea",
+    name="skm-tea",
     version=get_version(),
-    author="Arjun Desai",
+    author="The SKM-TEA team",
     url="",
     description="A package for training on, interacting with, and visualizing the SKM-TEA dataset",
-    packages=find_packages(exclude=("configs", "tests")),
+    packages=find_packages(exclude=("configs", "tests", "*.tests", "*.tests.*", "tests.*")),
     python_requires=">=3.6",
     install_requires=[
-        "ss_recon",  # need to install before ismrmrd
-        "torch>=1.7",
         "h5py",
         "matplotlib",
         "numpy",
@@ -64,6 +81,7 @@ setup(
         "tqdm",
         "xlrd",
         "monai>=0.3.0",
+        "meddlr",
         "pytorch-lightning>=1.0.0",
         "zarr",
     ],
