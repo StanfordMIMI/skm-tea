@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
 
 from iopath.common.file_io import PathHandler
-from ss_recon.utils.cluster import Cluster
+from meddlr.utils.cluster import Cluster
 
 from skm_tea.utils import env
 
@@ -98,11 +98,7 @@ class FileSyncHandler(GeneralPathHandler):
         return subprocess.run(f"rsync -av {remote_path} {cache_path}", shell=True, check=True)
 
     def _get_local_path(
-        self,
-        path: str,
-        force: bool = False,
-        cache_dir: Optional[str] = None,
-        **kwargs: Any,
+        self, path: str, force: bool = False, cache_dir: Optional[str] = None, **kwargs: Any
     ) -> str:
         """
         This implementation downloads the remote resource and caches it locally.

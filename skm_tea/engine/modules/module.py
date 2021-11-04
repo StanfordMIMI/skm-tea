@@ -1,18 +1,18 @@
 import logging
 import os
 
+import meddlr.ops as oF
 import numpy as np
-import ss_recon.ops as oF
 import torch
+from meddlr.config.config import CfgNode
+from meddlr.data.transforms.transform import normalize_affine, unnormalize_affine
+from meddlr.evaluation.evaluator import DatasetEvaluators
+from meddlr.evaluation.recon_evaluation import ReconEvaluator
+from meddlr.evaluation.seg_evaluation import SemSegEvaluator
+from meddlr.modeling.loss_computer import build_loss_computer
+from meddlr.ops import complex as cplx
 from pytorch_lightning.loggers import LoggerCollection, WandbLogger
 from pytorch_lightning.utilities import rank_zero_only
-from ss_recon.config.config import CfgNode
-from ss_recon.data.transforms.transform import normalize_affine, unnormalize_affine
-from ss_recon.evaluation.evaluator import DatasetEvaluators
-from ss_recon.evaluation.recon_evaluation import ReconEvaluator
-from ss_recon.evaluation.seg_evaluation import SemSegEvaluator
-from ss_recon.modeling.loss_computer import build_loss_computer
-from ss_recon.ops import complex as cplx
 
 from skm_tea.data.data_module import qDESSDataModule
 from skm_tea.engine.modules.recon import ReconModule
@@ -255,9 +255,10 @@ class SkmTeaSemSegModule(SkmTeaModule):
                 # Normalize by volume.
                 shape = (image.shape[0],) + (1,) * (image.ndim - 1)
                 mean, std = inputs["mean"].view(shape), inputs["std"].view(shape)
-                vol_mean, vol_std = inputs["stats"]["target"]["vol_mean"].view(shape), inputs[
-                    "stats"
-                ]["target"]["vol_std"].view(shape)
+                vol_mean, vol_std = (
+                    inputs["stats"]["target"]["vol_mean"].view(shape),
+                    inputs["stats"]["target"]["vol_std"].view(shape),
+                )
                 image = normalize_affine(unnormalize_affine(image, mean, std), vol_mean, vol_std)
                 inputs["mean"], inputs["std"] = vol_mean, vol_std
             else:

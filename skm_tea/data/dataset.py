@@ -5,13 +5,13 @@ from typing import Any, Callable, Dict, List, Sequence, Union
 
 import dosma as dm
 import h5py
+import meddlr.ops as oF
 import nibabel as nib
 import numpy as np
-import ss_recon.ops as oF
 import torch
-from ss_recon.data.data_utils import HDF5Manager, collect_mask
-from ss_recon.data.slice_dataset import SliceData
-from ss_recon.utils import profiler
+from meddlr.data.data_utils import HDF5Manager, collect_mask
+from meddlr.data.slice_dataset import SliceData
+from meddlr.utils import profiler
 from tqdm import tqdm
 
 from skm_tea.data.register import seg_categories_to_idxs

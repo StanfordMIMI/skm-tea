@@ -1,8 +1,8 @@
 from enum import Enum
 from typing import Dict, Sequence, Union
 
+import meddlr.ops.complex as cplx
 import numpy as np
-import ss_recon.ops.complex as cplx
 import torch
 import torchvision.utils as tv_utils
 
@@ -140,11 +140,7 @@ def draw_reconstructions(
                 data = data.unsqueeze(0).unsqueeze(0)
 
         data = tv_utils.make_grid(
-            data,
-            nrow=nchannels,
-            padding=padding,
-            normalize=True,
-            scale_each=True,
+            data, nrow=nchannels, padding=padding, normalize=True, scale_each=True
         )
         outputs[name] = data.numpy()
     return outputs

@@ -6,13 +6,13 @@ from typing import Any, Callable, Dict, Sequence, Union
 
 import pytorch_lightning as pl
 import torch
+from meddlr.data import build_recon_train_loader, build_recon_val_loader
+from meddlr.evaluation.evaluator import DatasetEvaluator, DatasetEvaluators
+from meddlr.evaluation.testing import flatten_results_dict, print_csv_format
+from meddlr.modeling import build_model, initialize_model
+from meddlr.modeling.loss_computer import LossComputer
+from meddlr.solver import build_lr_scheduler, build_optimizer
 from pytorch_lightning.utilities import rank_zero_only
-from ss_recon.data import build_recon_train_loader, build_recon_val_loader
-from ss_recon.evaluation.evaluator import DatasetEvaluator, DatasetEvaluators
-from ss_recon.evaluation.testing import flatten_results_dict, print_csv_format
-from ss_recon.modeling import build_model, initialize_model
-from ss_recon.modeling.loss_computer import LossComputer
-from ss_recon.solver import build_lr_scheduler, build_optimizer
 from torch import nn
 
 from skm_tea.engine.trainer import convert_cfg_time_to_iter
@@ -103,10 +103,7 @@ class PLModule(pl.LightningModule):
         cfg.freeze()
 
         opt = build_optimizer(cfg, self.model)
-        scheduler = {
-            "scheduler": build_lr_scheduler(self.cfg, opt),
-            "interval": "step",
-        }
+        scheduler = {"scheduler": build_lr_scheduler(self.cfg, opt), "interval": "step"}
         return [opt], [scheduler]
 
     def training_step(self, inputs: Dict[str, Any], batch_idx):
@@ -114,11 +111,7 @@ class PLModule(pl.LightningModule):
         data_time = torch.tensor(self.trainer.profiler.recorded_durations["get_train_batch"][-1])
         profile_times = {
             k: self.trainer.profiler.recorded_durations.get(k, [0.0])
-            for k in [
-                "training_step_and_backward",
-                "run_training_batch",
-                "get_train_batch",
-            ]
+            for k in ["training_step_and_backward", "run_training_batch", "get_train_batch"]
         }
         profile_times = {k: torch.as_tensor(v[-1]) for k, v in profile_times.items() if len(v)}
         data_profiler = inputs.pop("_profiler", {})

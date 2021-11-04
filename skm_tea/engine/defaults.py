@@ -14,12 +14,12 @@ import re
 from typing import Sequence
 
 import torch
-from ss_recon.config.config import CfgNode
-from ss_recon.engine.defaults import init_reproducible_mode
-from ss_recon.utils import comm
-from ss_recon.utils.collect_env import collect_env_info
-from ss_recon.utils.env import get_available_gpus, seed_all_rng
-from ss_recon.utils.logger import setup_logger
+from meddlr.config.config import CfgNode
+from meddlr.engine.defaults import init_reproducible_mode
+from meddlr.utils import comm
+from meddlr.utils.collect_env import collect_env_info
+from meddlr.utils.env import get_available_gpus, seed_all_rng
+from meddlr.utils.logger import setup_logger
 
 from skm_tea.utils import env
 from skm_tea.utils.general import format_exp_version
@@ -60,10 +60,7 @@ def default_argument_parser():
     )
     parser.add_argument("--eval-only", action="store_true", help="perform evaluation only")
     parser.add_argument(
-        "--num-gpus",
-        type=int,
-        default=1,
-        help="number of gpus. overrided by --devices",
+        "--num-gpus", type=int, default=1, help="number of gpus. overrided by --devices"
     )
     parser.add_argument("--devices", type=int, nargs="*", default=None)
     parser.add_argument("--debug", action="store_true", help="use debug mode")
@@ -88,7 +85,7 @@ def default_setup(
     """
     Perform some basic common setups at the beginning of a job, including:
 
-    1. Set up the ss_recon logger
+    1. Set up the meddlr and skm-tea loggers.
     2. Log basic information about environment, cmdline arguments, and config
     3. Backup the config to the output directory
     4. Enables debug mode if ``args.debug==True``
@@ -139,7 +136,7 @@ def default_setup(
 
     setup_logger(output_dir, distributed_rank=rank, name="fvcore")
     setup_logger(output_dir, distributed_rank=rank)
-    logger = setup_logger(output_dir, distributed_rank=rank, name="skm_tea")
+    logger = setup_logger(output_dir, distributed_rank=rank, name="skm_tea", abbrev_name="st")
 
     if is_repro_mode:
         init_reproducible_mode(cfg, eval_only)

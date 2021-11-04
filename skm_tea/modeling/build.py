@@ -1,7 +1,7 @@
 import inspect
 import logging
 
-from ss_recon.modeling.meta_arch import META_ARCH_REGISTRY
+from meddlr.modeling.meta_arch import META_ARCH_REGISTRY
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +18,7 @@ def build_model(cfg, in_channels=None, out_channels=None, **kwargs):
         build_arch = None
     klass = META_ARCH_REGISTRY.get(meta_arch)
 
-    channel_args = {
-        "in_channels": in_channels,
-        "out_channels": out_channels,
-    }
+    channel_args = {"in_channels": in_channels, "out_channels": out_channels}
     sig = inspect.signature(klass)
     for k, v in channel_args.items():
         if k in sig.parameters:

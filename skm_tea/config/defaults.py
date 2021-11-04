@@ -1,4 +1,4 @@
-from ss_recon.config import CfgNode as CN
+from meddlr.config import CfgNode as CN
 
 # -----------------------------------------------------------------------------
 # Convention about Training / Test specific parameters
@@ -44,10 +44,7 @@ _TB_RECON = CN()
 _TB_RECON.CHANNELS = (16, 32, 64)
 _TB_RECON.STRIDES = (2,)
 _TB_RECON.KERNEL_SIZE = (5,)
-_TB_RECON.ORDER = (
-    "conv",
-    "relu",
-)
+_TB_RECON.ORDER = ("conv", "relu")
 _TB_RECON.ENC_NUM_CONV_BLOCKS = (1, 2, 3)
 _TB_RECON.DEC_NUM_CONV_BLOCKS = (2, 3)
 _TB_RECON.MULTI_CONCAT = ()
@@ -74,7 +71,7 @@ _C.MODEL.TASKS = ("recon",)
 _C.MODEL.PARAMETERS = CN()
 _C.MODEL.PARAMETERS.USE_COMPLEX_WEIGHTS = False
 # How to initialize model parameters. Should not be specified if INIT_WEIGHTS is specified.
-# See ss_recon.modeling.meta_arch.build.initialize_model for more information.
+# See skm_tea.modeling.meta_arch.build.initialize_model for more information.
 _C.MODEL.PARAMETERS.INIT = ()
 
 # -----------------------------------------------------------------------------
@@ -140,11 +137,11 @@ _C.MODEL.SEG.IN_CHANNELS = None
 # _C.MODEL.SEG.MODEL.NNUNET_MONAI = _NNUNET_MONAI.clone()
 
 # Image normalization options.
-# See ss_recon/data/transforms/transform.py for more details.
+# See skm_tea/data/transforms/transform.py for more details.
 _C.MODEL.NORMALIZER = CN()
 _C.MODEL.NORMALIZER.NAME = "TopMagnitudeNormalizer"
 # Keywords to normalize
-# See ss_recon/data/transforms/transform.py for more details
+# See skm_tea/data/transforms/transform.py for more details
 _C.MODEL.NORMALIZER.KEYWORDS = ()
 
 # -----------------------------------------------------------------------------
@@ -303,7 +300,7 @@ _C.SOLVER.MOMENTUM = 0.9
 
 _C.SOLVER.BASE_LR = 1e-4
 _C.SOLVER.MIN_LR = None
-# See ss_recon/solver/build.py for LR scheduler options
+# See meddlr.solver.build for LR scheduler options
 _C.SOLVER.LR_SCHEDULER_NAME = ""
 _C.SOLVER.GAMMA = 1.0
 # The iteration number to decrease learning rate by GAMMA.
@@ -402,9 +399,9 @@ _C.DESCRIPTION = CN()
 # Brief description about config
 _C.DESCRIPTION.BRIEF = ""
 # The entity (team/individual) account for logging to Weights & Biases
-_C.DESCRIPTION.ENTITY_NAME = "ss_recon"
+_C.DESCRIPTION.ENTITY_NAME = ""
 # Project name for logging to Weights & Biases
-_C.DESCRIPTION.PROJECT_NAME = "ss_recon"
+_C.DESCRIPTION.PROJECT_NAME = ""
 # Experiment name for logging to Weights & Biases
 _C.DESCRIPTION.EXP_NAME = ""
 # Tags associated with experiment.

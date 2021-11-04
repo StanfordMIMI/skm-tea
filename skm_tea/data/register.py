@@ -9,7 +9,7 @@ from typing import Any, Dict, Sequence
 
 import h5py
 import pandas as pd
-from ss_recon.data.catalog import DatasetCatalog, MetadataCatalog
+from meddlr.data.catalog import DatasetCatalog, MetadataCatalog
 
 from skm_tea.utils import env
 
@@ -358,10 +358,7 @@ def _build_predefined_splits():
         paths = get_paths(version)
         for split in ["train", "val", "test"]:
             name = f"skmtea_{version}_{split}"
-            splits[name] = (
-                None,
-                os.path.join(paths.ann_dir, f"{split}.json"),
-            )
+            splits[name] = (None, os.path.join(paths.ann_dir, f"{split}.json"))
             for v_alias in _VERSION_ALIASES.get(version, []):
                 splits[f"skmtea_{v_alias}_{split}"] = (
                     None,
@@ -379,11 +376,7 @@ def register_skm_tea(name, json_file, metadata: Dict[str, Any] = None):
     mask_gradwarp_corrected_dir = _path_mgr.get_local_path(paths.mask_gradwarp_corrected)
     DatasetCatalog.register(
         name,
-        lambda calib_size=None: load_skmtea_annotations(
-            json_file,
-            name,
-            calib_size=calib_size,
-        ),
+        lambda calib_size=None: load_skmtea_annotations(json_file, name, calib_size=calib_size),
     )
 
     # 2. Optionally, add metadata about this dataset,

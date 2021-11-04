@@ -2,15 +2,15 @@ import logging
 import os
 
 import pytorch_lightning as pl
+from meddlr.config.config import CfgNode
+from meddlr.engine.trainer import convert_cfg_time_to_iter as _convert_cfg_time_to_iter
+from meddlr.engine.trainer import format_as_iter
+from meddlr.utils import env
+from meddlr.utils.env import supports_wandb
 from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import CSVLogger
 from pytorch_lightning.profiler import SimpleProfiler
 from pytorch_lightning.utilities.distributed import rank_zero_only
-from ss_recon.config.config import CfgNode
-from ss_recon.engine.trainer import convert_cfg_time_to_iter as _convert_cfg_time_to_iter
-from ss_recon.engine.trainer import format_as_iter
-from ss_recon.utils import env
-from ss_recon.utils.env import supports_wandb
 
 from skm_tea.callbacks import PLPeriodicCheckpointer
 from skm_tea.utils.pl_utils import LoggerCollection, TensorBoardLogger, WandbLogger
@@ -49,7 +49,7 @@ class PLDefaultTrainer(pl.Trainer):
         eval_only=False,
         **kwargs,
     ):
-        logger = logging.getLogger("ss_recon")
+        logger = logging.getLogger("skm_tea")
 
         self.eval_only = eval_only
         if "limit_train_batches" in kwargs:
@@ -89,21 +89,13 @@ class PLDefaultTrainer(pl.Trainer):
             log_gpu_memory=log_gpu_memory,
             checkpoint_callback=False,
             sync_batchnorm=False,
-            profiler=SimpleProfiler(
-                dirpath=cfg.OUTPUT_DIR,
-                filename="profile.txt",
-            ),
+            profiler=SimpleProfiler(dirpath=cfg.OUTPUT_DIR, filename="profile.txt"),
             log_every_n_steps=5,
             replace_sampler_ddp=replace_sampler_ddp,
             deterministic=env.is_repro(),
         )
         if num_gpus > 0:
-            args.update(
-                {
-                    "gpus": num_gpus,
-                    "auto_select_gpus": True,
-                }
-            )
+            args.update({"gpus": num_gpus, "auto_select_gpus": True})
 
         args.update(kwargs)
         super().__init__(**args)

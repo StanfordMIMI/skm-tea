@@ -15,13 +15,7 @@ _PATH_MANAGER = env.get_path_manager()
 class PLPeriodicCheckpointer(pl.Callback):
     LAST_CHECKPOINT_FILE = "last_checkpoint"
 
-    def __init__(
-        self,
-        frequency,
-        filepath,
-        prefix: str = "",
-        save_after_val=False,
-    ):
+    def __init__(self, frequency, filepath, prefix: str = "", save_after_val=False):
         """
         Args:
             save_step_frequency: how often to save in steps

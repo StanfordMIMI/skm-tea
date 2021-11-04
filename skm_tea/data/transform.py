@@ -3,14 +3,14 @@ import logging
 import os
 from typing import Collection, Dict, Tuple, Union
 
+import meddlr.ops as oF
 import numpy as np
-import ss_recon.ops as oF
 import torch
 import zarr
-from ss_recon.data.transforms.transform import AffineNormalizer, build_normalizer
-from ss_recon.forward import SenseModel
-from ss_recon.ops import complex as cplx
-from ss_recon.utils import profiler
+from meddlr.data.transforms.transform import AffineNormalizer, build_normalizer
+from meddlr.forward import SenseModel
+from meddlr.ops import complex as cplx
+from meddlr.utils import profiler
 from tqdm import tqdm
 
 from skm_tea.modeling.build import get_model_cfg
@@ -338,12 +338,7 @@ class _DataTransform:
         seed = sum(tuple(map(ord, fname))) if self._is_test or is_fixed else None  # noqa
         timer.start(_GENERATE_AND_APPLY_MASK)
         masked_kspace, mask = self._subsampler(
-            kspace,
-            mode="2D",
-            seed=seed,
-            acceleration=acceleration,
-            acq_shape=acq_shape,
-            mask=mask,
+            kspace, mode="2D", seed=seed, acceleration=acceleration, acq_shape=acq_shape, mask=mask
         )
         timer.stop(_GENERATE_AND_APPLY_MASK)
 

@@ -14,10 +14,10 @@ import warnings
 from typing import Sequence
 
 import torch
-from ss_recon.config import get_cfg
-from ss_recon.evaluation.testing import check_consistency, find_weights
-from ss_recon.utils import comm
-from ss_recon.utils.env import supports_wandb
+from meddlr.config import get_cfg
+from meddlr.evaluation.testing import check_consistency, find_weights
+from meddlr.utils import comm
+from meddlr.utils.env import supports_wandb
 
 from skm_tea import config  # noqa: F401 (required for setting default config)
 from skm_tea.engine import (

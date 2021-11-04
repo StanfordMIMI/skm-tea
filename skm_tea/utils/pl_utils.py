@@ -4,6 +4,7 @@ import os
 from typing import Dict, Optional
 
 import numpy as np
+from meddlr.evaluation.testing import flatten_results_dict
 from pytorch_lightning.loggers import LoggerCollection as _LoggerCollection
 from pytorch_lightning.loggers import TensorBoardLogger as _TensorBoardLogger
 from pytorch_lightning.loggers import WandbLogger as _WanbLogger
@@ -23,10 +24,7 @@ _logger = logging.getLogger(__name__)
 class TensorBoardLogger(_TensorBoardLogger):
     @rank_zero_only
     def log_images(
-        self,
-        images: Dict[str, np.ndarray],
-        step: Optional[int] = None,
-        data_format: str = "CHW",
+        self, images: Dict[str, np.ndarray], step: Optional[int] = None, data_format: str = "CHW"
     ) -> None:
         """
         Args:
@@ -42,7 +40,7 @@ class TensorBoardLogger(_TensorBoardLogger):
     @rank_zero_only
     def log_metrics(self, metrics: Dict[str, float], step: Optional[int] = None) -> None:
         assert rank_zero_only.rank == 0, "experiment tried to log from global_rank != 0"
-        from ss_recon.evaluation.testing import flatten_results_dict
+        from meddlr.evaluation.testing import flatten_results_dict
 
         metrics = flatten_results_dict(metrics)
         super().log_metrics(metrics=metrics, step=step)
@@ -80,8 +78,6 @@ class WandbLogger(_WanbLogger):
     def log_metrics(self, metrics: Dict[str, float], step: Optional[int] = None) -> None:
         if not self._do_log:
             return
-
-        from ss_recon.evaluation.testing import flatten_results_dict
 
         metrics = flatten_results_dict(metrics)
         return super().log_metrics(metrics, step)
@@ -133,10 +129,7 @@ class LoggerCollection(_LoggerCollection):
     """
 
     def log_images(
-        self,
-        images: Dict[str, np.ndarray],
-        step: Optional[int] = None,
-        data_format: str = "CHW",
+        self, images: Dict[str, np.ndarray], step: Optional[int] = None, data_format: str = "CHW"
     ) -> None:
         for logger in self._logger_iterable:
             if hasattr(logger, "log_images"):

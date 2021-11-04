@@ -1,7 +1,7 @@
 import pytorch_lightning as pl
-from ss_recon.data.build import _build_dataset, get_recon_dataset_dicts
-from ss_recon.data.samplers.build import build_train_sampler, build_val_sampler
-from ss_recon.data.transforms.subsample import build_mask_func
+from meddlr.data.build import _build_dataset, get_recon_dataset_dicts
+from meddlr.data.samplers.build import build_train_sampler, build_val_sampler
+from meddlr.data.transforms.subsample import build_mask_func
 from torch.utils.data import DataLoader
 
 from skm_tea.data.collate import default_collate

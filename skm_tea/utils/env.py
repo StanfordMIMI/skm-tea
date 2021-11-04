@@ -1,8 +1,8 @@
 import os
 
 from iopath.common.file_io import PathManager, PathManagerFactory
-from ss_recon.utils.cluster import Cluster
-from ss_recon.utils.env import is_repro, supports_cupy  # noqa: F401
+from meddlr.utils.cluster import Cluster
+from meddlr.utils.env import is_repro, supports_cupy  # noqa: F401
 
 
 def get_path_manager(key="skm_tea") -> PathManager:

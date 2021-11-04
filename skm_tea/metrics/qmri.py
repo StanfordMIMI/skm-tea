@@ -11,7 +11,7 @@ import torch
 from dosma.core.orientation import SAGITTAL
 from dosma.core.quant_vals import T2
 from dosma.tissues import FemoralCartilage, Meniscus, PatellarCartilage, TibialCartilage
-from ss_recon.metrics import Metric
+from meddlr.metrics import Metric
 from torchmetrics.utilities import reduce
 from tqdm import tqdm
 
@@ -25,7 +25,7 @@ class QuantitativeKneeMRI(Metric):
     are subdivided into clinically relevant regions. As of v0.1.0, DOSMA currently
     supports subdivision for femoral cartilage, tibial cartilage, and patellar cartilage.
 
-    See :cls:`ss_recon.metrics.Metric` for argument details.
+    See :cls:`meddlr.metrics.Metric` for argument details.
 
     Note:
         This metric does not preserve gradients. It should not be used for loss computation.

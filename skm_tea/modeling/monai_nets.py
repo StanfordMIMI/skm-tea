@@ -5,9 +5,9 @@ from abc import ABC, abstractmethod
 from typing import Dict, Tuple, Union
 
 import torch.nn as nn
+from meddlr.modeling.meta_arch.build import META_ARCH_REGISTRY
 from monai.networks.nets import UNet, VNet
 from monai.networks.nets.dynunet import DynUNet
-from ss_recon.modeling.meta_arch.build import META_ARCH_REGISTRY
 
 __all__ = ["VNetMONAI"]
 

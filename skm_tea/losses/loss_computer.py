@@ -1,4 +1,4 @@
-from ss_recon.modeling.loss_computer import LOSS_COMPUTER_REGISTRY, BasicLossComputer, LossComputer
+from meddlr.modeling.loss_computer import LOSS_COMPUTER_REGISTRY, BasicLossComputer, LossComputer
 
 from skm_tea.losses.build import build_loss
 

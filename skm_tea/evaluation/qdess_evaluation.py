@@ -6,24 +6,24 @@ from typing import Dict
 
 import dosma as dm
 import h5py
+import meddlr.ops as oF
+import meddlr.utils.comm as comm
 import numpy as np
-import ss_recon.ops as oF
-import ss_recon.utils.comm as comm
 import torch
 from dosma.core import MedicalVolume
 from dosma.core.device import get_array_module
 from dosma.scan_sequences.mri import QDess
+from meddlr.data import MetadataCatalog
+from meddlr.data.catalog import DatasetCatalog
+from meddlr.data.data_utils import collect_mask
+from meddlr.evaluation.evaluator import DatasetEvaluators
+from meddlr.evaluation.recon_evaluation import ReconEvaluator
+from meddlr.evaluation.scan_evaluator import ScanEvaluator
+from meddlr.evaluation.seg_evaluation import SemSegEvaluator
+from meddlr.metrics.collection import MetricCollection
+from meddlr.ops import complex as cplx
+from meddlr.utils.general import move_to_device
 from pytorch_lightning.utilities.distributed import rank_zero_only
-from ss_recon.data import MetadataCatalog
-from ss_recon.data.catalog import DatasetCatalog
-from ss_recon.data.data_utils import collect_mask
-from ss_recon.evaluation.evaluator import DatasetEvaluators
-from ss_recon.evaluation.recon_evaluation import ReconEvaluator
-from ss_recon.evaluation.scan_evaluator import ScanEvaluator
-from ss_recon.evaluation.seg_evaluation import SemSegEvaluator
-from ss_recon.metrics.collection import MetricCollection
-from ss_recon.ops import complex as cplx
-from ss_recon.utils.general import move_to_device
 from tqdm import tqdm
 
 from skm_tea.data.register import seg_categories_to_idxs
