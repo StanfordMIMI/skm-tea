@@ -14,7 +14,7 @@ from meddlr.ops import complex as cplx
 from pytorch_lightning.loggers import LoggerCollection, WandbLogger
 from pytorch_lightning.utilities import rank_zero_only
 
-from skm_tea.data.data_module import qDESSDataModule
+from skm_tea.data.data_module import SkmTeaDataModule
 from skm_tea.engine.modules.recon import ReconModule
 from skm_tea.evaluation.qdess_evaluation import SkmTeaEvaluator
 from skm_tea.losses import SegLossComputer
@@ -36,7 +36,7 @@ class SkmTeaModule(ReconModule):
         self.seg_classes = self.cfg.MODEL.SEG.CLASSES
 
     def _build_datamodule(self, cfg):
-        return qDESSDataModule(cfg, self.tasks, self.distributed)
+        return SkmTeaDataModule(cfg, self.tasks, self.distributed)
 
     def train_dataloader(self, cfg=None):
         if not cfg:

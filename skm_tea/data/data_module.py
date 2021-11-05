@@ -8,14 +8,14 @@ from skm_tea.data.collate import default_collate
 from skm_tea.data.dataset import SkmTeaDicomDataset, SkmTeaRawDataset
 from skm_tea.data.transform import qDESSDataTransform
 
-__all__ = ["qDESSDataModule"]
+__all__ = ["SkmTeaDataModule"]
 
 
 _TRACKS_TO_DATASETS = {"raw_data": SkmTeaRawDataset, "dicom": SkmTeaDicomDataset}
 _PRECOMPUTED_MASKS_CACHE_DIR = "cache://skm-tea/precomputed-masks"
 
 
-class qDESSDataModule(pl.LightningDataModule):
+class SkmTeaDataModule(pl.LightningDataModule):
     """
     TODO:
         - Add support for downloading dataset.
