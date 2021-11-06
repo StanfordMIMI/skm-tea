@@ -56,14 +56,28 @@ def get_version():
     return version
 
 
+# ---------------------------------------------------
+# Setup Information
+# ---------------------------------------------------
+NAME = "skm-tea"
+DESCRIPTION = "A package for interacting with, visualizing, and benchmarking the SKM-TEA dataset"
+VERSION = get_version()
+AUTHOR = "The SKM-TEA Team"
+EMAIL = "arjundd@stanford.edu"
+URL = "https://github.com/StanfordMIMI/skm-tea"
+REQUIRES_PYTHON = ">=3.6"
+
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
 setup(
-    name="skm-tea",
-    version=get_version(),
-    author="The SKM-TEA team",
-    url="",
-    description="A package for training on, interacting with, and visualizing the SKM-TEA dataset",
+    name=NAME,
+    version=VERSION,
+    author=AUTHOR,
+    url=URL,
+    description=DESCRIPTION,
     packages=find_packages(exclude=("configs", "tests", "*.tests", "*.tests.*", "tests.*")),
-    python_requires=">=3.6",
+    python_requires=REQUIRES_PYTHON,
     install_requires=[
         "h5py",
         "matplotlib",
@@ -72,7 +86,6 @@ setup(
         "dosma>=0.1.0",
         "iopath",
         "medpy",
-        "ismrmrd",
         "pandas",
         "tqdm",
         "xlrd",
@@ -90,5 +103,16 @@ setup(
             "flake8-comprehensions",
             "pre-commit",
         ]
+    },
+    classifiers=[
+        # Trove classifiers
+        # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
+        "Programming Language :: Python :: 3",
+        "Operating System :: OS Independent",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    ],
+    # $ setup.py publish support.
+    cmdclass={
+        "upload": UploadCommand,
     },
 )
