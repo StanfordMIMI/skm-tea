@@ -1,13 +1,45 @@
-# Temporary files
-._*
-**/.DS_Store
-
-# Log files
-**/logs
-
-# Excel files
-*.xlsx
-
-# IDE
-**/.vscode
+# Ignore project files
 **/.idea
+**/.DS_Store
+**/.vscode
+
+# Ignore cache
+**/__pycache__
+**/*.pyc
+
+# Ignore egg files
+**/*.egg-info
+
+# Ignore tensorflow logs
+**/tf_log
+
+# Ignore results
+**/pik_data
+
+# Ignore test_data
+**/test_data
+**/testing_data
+**/sample_data
+**/test_results
+
+# temp files
+._*
+# ignore checkpoint files
+**/.ipynb_checkpoints/
+
+#ignore cross validation files
+*.cv
+
+# ignore notebooks (for now)
+**/notebooks
+*.ipynb
+
+# slurm files
+slurm*.out
+
+# coverage files
+.coverage
+coverage.xml
+
+# settings dir
+**/.settings

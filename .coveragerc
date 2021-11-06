@@ -1,0 +1,15 @@
+[run]
+branch = True
+source = skm_tea
+
+[report]
+exclude_lines =
+    pragma: no cover
+    raise NotImplemented
+    raise NotImplementedError
+    if __name__ == .__main__.:
+ignore_errors = True
+include =
+    skm_tea/*
+omit =
+    skm_tea/modeling/*

@@ -1,0 +1,14 @@
+h5py
+matplotlib
+numpy
+fvcore
+dosma>=0.1.0
+iopath
+medpy
+pandas
+tqdm
+xlrd
+monai>=0.3.0
+meddlr
+pytorch-lightning>=1.0.0
+zarr
