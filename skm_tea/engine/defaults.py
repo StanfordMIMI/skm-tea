@@ -7,15 +7,15 @@ The behavior of functions/classes in this file is subject to change,
 since they are meant to represent the "common default behavior" people need in
 their projects.
 """
-
 import argparse
+import logging
 import os
 import re
 from typing import Sequence
 
 import torch
 from meddlr.config.config import CfgNode
-from meddlr.engine.defaults import init_reproducible_mode
+from meddlr.engine.defaults import init_reproducible_mode as _init_reproducible_mode
 from meddlr.utils import comm
 from meddlr.utils.collect_env import collect_env_info
 from meddlr.utils.env import get_available_gpus, seed_all_rng
@@ -144,13 +144,13 @@ def default_setup(
     cfg.freeze()
 
     if args.debug:
-        os.environ["SSRECON_DEBUG"] = "True"
+        os.environ["MEDDLR_DEBUG"] = "True"
         logger.info("Running in debug mode")
     if use_lightning:
-        os.environ["SSRECON_PT_LIGHTNING"] = "True"
+        os.environ["MEDDLR_PT_LIGHTNING"] = "True"
         logger.info("Running with pytorch lightning")
     if is_repro_mode:
-        os.environ["SSRECON_REPRO"] = "True"
+        os.environ["MEDDLR_REPRO"] = "True"
         logger.info("Running in reproducible mode")
 
     logger.info("Rank of current process: {}. World size: {}".format(rank, comm.get_world_size()))
@@ -201,3 +201,24 @@ def default_setup(
     # Resume if we are evaluating or resuming
     # if use_wandb:
     #     _init_wandb_experiment(cfg, resume=not make_new_version)
+
+
+def init_reproducible_mode(cfg: CfgNode, eval_only: bool = False):
+    logger = logging.getLogger(__name__)
+
+    # Set all seeds in the config if they are not set.
+    # NOTE: The seed for precomputing masks is not set due to
+    # existing issues with numba stalling with fixed seeds at large.
+    # N values.
+    precompute_seed = cfg.AUG_TRAIN.UNDERSAMPLE.PRECOMPUTE.SEED
+
+    _init_reproducible_mode(cfg, eval_only=eval_only)
+
+    if precompute_seed == -1:
+        logger.warning(
+            "Seed for precomputing masks (AUG_TRAIN.UNDERSAMPLE.PRECOMPUTE.SEED) "
+            "could not be set. This may result in non-reproducible behavior."
+        )
+        cfg.defrost()
+        cfg.AUG_TRAIN.UNDERSAMPLE.PRECOMPUTE.SEED = precompute_seed
+        cfg.freeze()

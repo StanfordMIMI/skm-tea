@@ -17,6 +17,8 @@ from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
+__all__ = ["QuantitativeKneeMRI"]
+
 
 class QuantitativeKneeMRI(Metric):
     """Metric for computing quantitative MRI parameters for knee tissues.

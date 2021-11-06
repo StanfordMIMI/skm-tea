@@ -78,6 +78,7 @@ _C.MODEL.PARAMETERS.INIT = ()
 # Unrolled model
 # -----------------------------------------------------------------------------
 _C.MODEL.UNROLLED = CN()
+_C.MODEL.UNROLLED.BLOCK_ARCHITECTURE = "ResNet"
 _C.MODEL.UNROLLED.NUM_UNROLLED_STEPS = 5
 _C.MODEL.UNROLLED.NUM_RESBLOCKS = 2
 _C.MODEL.UNROLLED.NUM_FEATURES = 256
@@ -158,12 +159,9 @@ _C.MODEL.UNET.IN_CHANNELS = 2
 _C.MODEL.UNET.CHANNELS = 32
 _C.MODEL.UNET.NUM_POOL_LAYERS = 4
 _C.MODEL.UNET.DROPOUT = 0.0
-_C.MODEL.UNET.BLOCK_ORDER = (
-    "conv",
-    "instancenorm",
-    ("leakyrelu", {"negative_slope": 0.2}),
-    "dropout",
-)
+_C.MODEL.UNET.NORMALIZE = False
+# BLOCK_ORDER only applies to GeneralizedUNet
+_C.MODEL.UNET.BLOCK_ORDER = ("conv", "relu", "conv", "relu", "batchnorm", "dropout")
 
 # -----------------------------------------------------------------------------
 # Denoising model
