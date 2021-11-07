@@ -12,7 +12,9 @@ This repository contains the building blocks for training and benchmarking model
 ```bash
 pip install skm-tea
 ```
-> _Installing from dev_: For most up-to-date developmental code, run `pip install "skm-tea @ git+https://github.com/StanfordMIMI/skm-tea@dev"`
+> _Installing locally_: For local development, clone the repo and run `pip install -e ".[dev]"`
+
+> _Installing from main: For most up-to-date code, run `pip install "skm-tea @ git+https://github.com/StanfordMIMI/skm-tea@main"`
 
 Configure your paths and get going!
 ```python
@@ -36,7 +38,8 @@ os.environ["MEDDLR_DATASETS_DIR"] = "/path/to/datasets"
 Documentation for downloading and using the SKM-TEA dataset can be found in [DATASET.md](./DATASET.md). Benchmarks are constantly evolving - check this repository for up-to-date baselines.
 
 ## ✉️ About
-This repository is being developed at the Stanford's MIMI Lab. Please reach out to `arjundd [at] stanford [dot] edu` if you would like to use or contribute to this repository. 
+<a name="about"></a> 
+This repository is being developed at the Stanford's MIMI Lab. Please reach out to `arjundd [at] stanford [dot] edu` if you would like to use or contribute to SKM-TEA. 
 
 If you use the SKM-TEA dataset or code, please use the following BibTex:
 
