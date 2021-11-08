@@ -6,15 +6,15 @@
 
 The 2021 Stanford Knee MRI with Multi-Task Evaluation (SKM-TEA) dataset pairs raw quantitative MRI (qMRI) data, image data, and dense labels of tissues and pathology for end-to-end exploration and evaluation of the MR imaging pipeline.
 
-This repository contains the building blocks for training and benchmarking models with the SKM-TEA dataset, such as PyTorch dataloaders, evaluation metrics, and baselines. It also contains tutorials for using the dataset and codebase. It utilizes the the [Meddlr framework](https://github.com/ad12/meddlr) and [PyTorch Lightning](https://github.com/PyTorchLightning/pytorch-lightning) for training, evaluation, and machine utilities.
+This repository contains the building blocks for training and benchmarking models with the SKM-TEA dataset, such as PyTorch dataloaders, evaluation metrics, and baselines. It also contains tutorials for using the dataset and codebase. It utilizes the [Meddlr](https://github.com/ad12/meddlr) and [PyTorch Lightning](https://github.com/PyTorchLightning/pytorch-lightning) for training, evaluation, and machine utilities.
 
 ## ⚡ QuickStart
 ```bash
 pip install skm-tea
 ```
-> _Installing locally_: For local development, clone the repo and run `pip install -e ".[dev]"`
+> _Installing locally_: For local development, fork and clone the repo and run `pip install -e ".[dev]"`
 
-> _Installing from main: For most up-to-date code, run `pip install "skm-tea @ git+https://github.com/StanfordMIMI/skm-tea@main"`
+> _Installing from main: For most up-to-date code without a local install, run `pip install "skm-tea @ git+https://github.com/StanfordMIMI/skm-tea@main"`
 
 Configure your paths and get going!
 ```python

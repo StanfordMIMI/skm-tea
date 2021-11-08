@@ -74,8 +74,11 @@ setup(
     name=NAME,
     version=VERSION,
     author=AUTHOR,
+    author_email=EMAIL,
     url=URL,
     description=DESCRIPTION,
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     packages=find_packages(exclude=("configs", "tests", "*.tests", "*.tests.*", "tests.*")),
     python_requires=REQUIRES_PYTHON,
     install_requires=[
@@ -101,14 +104,14 @@ setup(
             "black",
             "flake8-bugbear",
             "flake8-comprehensions",
-            "pre-commit",
+            "pre-commit>=2.9.3",
         ]
     },
     classifiers=[
         # Trove classifiers
         # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
         "Programming Language :: Python :: 3",
-        "Operating System :: OS Independent",
+        "License :: OSI Approved :: MIT License" "Operating System :: OS Independent",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
     ],
     # $ setup.py publish support.
