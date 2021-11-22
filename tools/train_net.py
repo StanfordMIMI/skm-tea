@@ -44,6 +44,7 @@ def setup(args):
     if opts and opts[0] == "--":
         opts = opts[1:]
     cfg.merge_from_list(opts)
+    cfg.format_fields(unroll=True)
     cfg.freeze()
 
     if not cfg.OUTPUT_DIR:
