@@ -33,7 +33,7 @@ os.environ["MEDDLR_DATASETS_DIR"] = "/path/to/datasets"
 # TODO: Add how to easily fetch dataset.
 ```
 
-## Pre-trained Models
+## 💎 Pre-trained Models
 A list of pre-trained models can be found [here](MODEL_ZOO.md) and in [Google Drive](https://drive.google.com/drive/folders/156cyINgx-x4uJasMBA6YPipdfOhg7cG5?usp=sharing). 
 
 To use them, pass the google drive urls for the config and weights (model) files to `st.build_deployment_model`:
