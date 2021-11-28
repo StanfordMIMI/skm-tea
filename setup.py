@@ -99,12 +99,23 @@ setup(
     ],
     extras_require={
         "dev": [
+            # Formatting
+            "coverage",
             "flake8",
             "isort",
-            "black",
+            "black==21.10b0",
             "flake8-bugbear",
             "flake8-comprehensions",
             "pre-commit>=2.9.3",
+            # Testing
+            "medpy",
+            "pooch",
+            "gdown",
+            # Documentation
+            "sphinx",
+            "sphinxcontrib-bibtex",
+            "sphinx-rtd-theme",
+            "m2r2",
         ]
     },
     classifiers=[

@@ -26,13 +26,22 @@ __all__ = ["SkmTeaModule", "SkmTeaSemSegModule"]
 
 
 class SkmTeaModule(ReconModule):
-    def __init__(self, cfg: CfgNode, num_parallel=1, eval_on_cpu: bool = False, **kwargs):
+    def __init__(
+        self,
+        cfg: CfgNode,
+        num_parallel=1,
+        eval_on_cpu: bool = False,
+        deployment: bool = False,
+        **kwargs,
+    ):
         self.tasks = cfg.MODEL.TASKS
-
-        super().__init__(cfg, num_parallel, eval_on_cpu=eval_on_cpu, **kwargs)
+        super().__init__(
+            cfg, num_parallel, eval_on_cpu=eval_on_cpu, deployment=deployment, **kwargs
+        )
         self.std_log = logging.getLogger(__name__)
-        self._datamodule_ = self._build_datamodule(self.cfg)
-        self._datamodule_.setup()
+        if not deployment:
+            self._datamodule_ = self._build_datamodule(self.cfg)
+            self._datamodule_.setup()
         self.seg_classes = self.cfg.MODEL.SEG.CLASSES
 
     def _build_datamodule(self, cfg):
@@ -216,10 +225,10 @@ class SkmTeaModule(ReconModule):
 class SkmTeaSemSegModule(SkmTeaModule):
     _ALIASES = ["qDESSSemSegModel"]
 
-    def __init__(self, cfg, num_parallel=1, eval_on_cpu: bool = False):
+    def __init__(self, cfg, num_parallel=1, eval_on_cpu: bool = False, **kwargs):
         if cfg.MODEL.TASKS != ("sem_seg",):
             raise ValueError(f"{type(self).__name__} only supports semantic segmentation.")
-        super().__init__(cfg, num_parallel, eval_on_cpu=eval_on_cpu)
+        super().__init__(cfg, num_parallel, eval_on_cpu=eval_on_cpu, **kwargs)
 
     @classmethod
     def build_model(cls, cfg):
