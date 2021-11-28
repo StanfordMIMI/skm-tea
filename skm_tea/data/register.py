@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import time
+import warnings
 from types import SimpleNamespace
 from typing import Any, Dict, Sequence
 
@@ -403,4 +404,11 @@ def register_all_skm_tea():
         register_skm_tea(name, json_file=ann_file)
 
 
-register_all_skm_tea()
+try:
+    register_all_skm_tea()
+except Exception as e:
+    warnings.warn(
+        "SKM-TEA dataset was not properly registered. "
+        "Please check that the dataset was properly downloaded and paths have been set. "
+        "The error is shown below:\n{}".format(e)
+    )
