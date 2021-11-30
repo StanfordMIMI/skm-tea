@@ -10,17 +10,17 @@ from skm_tea.config import get_cfg
 from skm_tea.engine.modules import SkmTeaModule, SkmTeaSemSegModule
 from skm_tea.utils import env
 
-__all__ = ["build_deployment_model"]
+__all__ = ["get_model_from_zoo"]
 
 
-def build_deployment_model(
+def get_model_from_zoo(
     cfg_or_file: Union[str, os.PathLike, CfgNode],
     weights_file: Union[str, os.PathLike] = None,
     unpack_model: bool = False,
     strict: bool = True,
     force_download: bool = False,
 ):
-    """Build model and optionally load in weights.
+    """Get model from zoo and optionally load in weights.
 
     This function is designed for distributing models for use.
     It builds the model from a configuration and optionally loads in pre-trained weights.
