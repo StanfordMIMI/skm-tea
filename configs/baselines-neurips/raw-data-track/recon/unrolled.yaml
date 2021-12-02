@@ -1,0 +1,60 @@
+DESCRIPTION:
+  BRIEF: f"Unrolled reconstruction baseline @ training acceleration {AUG_TRAIN.UNDERSAMPLE.ACCELERATIONS} - {MODEL.UNROLLED.NUM_UNROLLED_STEPS} unrolled, {MODEL.UNROLLED.NUM_RESBLOCKS} resblocks, {MODEL.UNROLLED.NUM_FEATURES} features, {MODEL.RECON_LOSS.NAME} loss, lr={SOLVER.BASE_LR}"
+  EXP_NAME: f"baselines-neurips/raw-data-track/recon/unrolled-{AUG_TRAIN.UNDERSAMPLE.ACCELERATIONS}-{DATASETS.QDESS.ECHO_KIND}"
+  TAGS: ("recon", "raw-data-track", "neurips-d&b", "unrolled")
+OUTPUT_DIR: f"results://skm-tea/baselines-neurips/raw-data-track/recon/unrolled-{AUG_TRAIN.UNDERSAMPLE.ACCELERATIONS}x/{DATASETS.QDESS.ECHO_KIND}"
+MODEL:
+  META_ARCHITECTURE: "GeneralizedUnrolledCNN"
+  UNROLLED:
+    NUM_UNROLLED_STEPS: 8
+    NUM_RESBLOCKS: 2
+    NUM_FEATURES: 128
+    NUM_EMAPS: 1
+    DROPOUT: 0.
+    CONV_BLOCK:
+      ACTIVATION: "relu"
+      NORM: "none"
+      ORDER: ("act", "conv")
+  RECON_LOSS:
+    NAME: "l1"
+    RENORMALIZE_DATA: False
+AUG_TRAIN:
+  UNDERSAMPLE:
+    ACCELERATIONS: ()  # TODO - Acceleration to use for undersampling during training
+    PRECOMPUTE:
+      NUM: 100000
+      SEED: -1
+AUG_TEST:
+  UNDERSAMPLE:
+    ACCELERATIONS: ()  # TODO - Acceleration to use for undersampling during testing
+DATASETS:
+  TRAIN: ("skmtea_v1_train",)
+  VAL: ("skmtea_v1_val",)
+  TEST: ("skmtea_v1_test",)
+  QDESS:
+    ECHO_KIND: ""  # TODO - one of ["echo1", "echo2", "echo1+echo2", "echo1-echo2-mc"]
+DATALOADER:
+  NUM_WORKERS: 8
+  SAMPLER_TRAIN: "GroupSampler"
+  GROUP_SAMPLER:
+    BATCH_BY: ("num_coils", "matrix_shape")
+    AS_BATCH_SAMPLER: True
+SOLVER:
+  OPTIMIZER: "Adam"
+  LR_SCHEDULER_NAME: ""
+  GRAD_ACCUM_ITERS: 6
+  TRAIN_BATCH_SIZE: 4
+  TEST_BATCH_SIZE: 8
+  MAX_ITER: 20
+  BASE_LR: 8e-4
+  WEIGHT_DECAY: 0.0001
+  CHECKPOINT_PERIOD: 1
+TEST:
+  EVAL_PERIOD: 1
+  FLUSH_PERIOD: 1000
+  VAL_METRICS:
+    RECON: ("psnr", "psnr_scan", "psnr_mag", "psnr_mag_scan", "nrmse", "nrmse_scan", "nrmse_mag", "nrmse_mag_scan", "ssim (Wang)")
+VIS_PERIOD: -400
+TIME_SCALE: "epoch"
+SEED: 1000
+VERSION: 1

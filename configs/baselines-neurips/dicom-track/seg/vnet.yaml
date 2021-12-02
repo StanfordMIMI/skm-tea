@@ -1,0 +1,62 @@
+# Config for V-Net as implemented in MONAI.
+DESCRIPTION:
+  BRIEF: f"V-Net segmentation following parameters used in MONAI - input={DATASETS.QDESS.ECHO_KIND}, {SOLVER.MAX_ITER} epochs, {SOLVER.BASE_LR} lr w/ {SOLVER.GAMMA}x decay every {SOLVER.STEPS} epochs, early stopping- T={SOLVER.EARLY_STOPPING.PATIENCE}, delta={SOLVER.EARLY_STOPPING.MIN_DELTA}, bsz={SOLVER.TRAIN_BATCH_SIZE}, qdess args={DATASETS.QDESS.KWARGS}"
+  EXP_NAME: f"baselines-neurips/dicom-track/seg/vnet-{DATASETS.QDESS.ECHO_KIND}"
+  TAGS: ("seg", "dicom-track", "neurips-d&b", "vnet-monai")
+OUTPUT_DIR: f"results://skm-tea/baselines-neurips/dicom-track/seg/vnet/{DATASETS.QDESS.ECHO_KIND}"
+MODEL:
+  META_ARCHITECTURE: "VNetMONAI"
+  SEG:
+    LOSS_NAME: "FlattenedDiceLoss"
+    CLASSES: ("pc", "fc", "tc", "men")
+    MODEL:
+      VNET_MONAI:
+        DROPOUT_PROB: 0.0
+  TASKS: ("sem_seg",)
+  PARAMETERS:
+    INIT:
+    - 
+      kind: "conv"
+      patterns: (".*weight", ".*bias")
+      initializers: (("kaiming_normal_", {"nonlinearity":"relu"}), "zeros_")
+    - 
+      kind: "norm"
+      patterns: (".*weight", ".*bias")
+      initializers: ("ones_", "zeros_")
+    -
+      patterns: ("output_block\.weight",)
+      initializers: ("xavier_uniform_",)
+DATASETS:
+  TRAIN: ("skmtea_v1_train",)
+  VAL: ("skmtea_v1_val",)
+  TEST: ("skmtea_v1_test",)
+  QDESS:
+    ECHO_KIND: ""  # TODO - one of ("echo1", "echo2", "echo1-echo2-mc", "rss")
+    DATASET_TYPE: "qDESSImageDataset"
+    KWARGS: ("orientation", "sagittal")
+DATALOADER:
+  NUM_WORKERS: 8
+  GROUP_SAMPLER:
+    BATCH_BY: ("inplane_shape",)
+    AS_BATCH_SAMPLER: True
+SOLVER:
+  OPTIMIZER: "Adam"
+  LR_SCHEDULER_NAME: "StepLR"
+  GAMMA: 0.9
+  STEPS: (2,)  # drop by 0.9x every 2 epochs
+  BASE_LR: 1e-3
+  MIN_LR: 1e-8
+  TRAIN_BATCH_SIZE: 16
+  TEST_BATCH_SIZE: 40
+  MAX_ITER: 100
+  WEIGHT_DECAY: 0.
+  CHECKPOINT_PERIOD: 1
+TEST:
+  EVAL_PERIOD: 1
+  VAL_METRICS:
+    SEM_SEG: ("DSC","VOE","CV","DSC_scan","VOE_scan","CV_scan")
+  FLUSH_PERIOD: -5
+VIS_PERIOD: -100
+TIME_SCALE: "epoch"
+SEED: 9001
+VERSION: 1

@@ -1,0 +1,64 @@
+# Config for U-Net as implemented in fastMRI.
+# Implementation based on:
+#   - Zbontar et al. fastMRI: An Open Dataset and Benchmarks for Accelerated MRI. ArXiv 2018.
+DESCRIPTION:
+  BRIEF: f"U-Net reconstruction baseline @ training acceleration {AUG_TRAIN.UNDERSAMPLE.ACCELERATIONS} - input={DATASETS.QDESS.ECHO_KIND}, {MODEL.UNET.NUM_POOL_LAYERS} pooling layers, {MODEL.UNET.CHANNELS} channels, {MODEL.RECON_LOSS.NAME} loss, lr={SOLVER.BASE_LR}"
+  EXP_NAME: f"baselines-neurips/raw-data-track/recon/unet-{AUG_TRAIN.UNDERSAMPLE.ACCELERATIONS}-{DATASETS.QDESS.ECHO_KIND}"
+  TAGS: ("recon", "raw-data-track", "neurips-d&b", "unet")
+OUTPUT_DIR: f"results://skm-tea/baselines-neurips/raw-data-track/recon/unet-{AUG_TRAIN.UNDERSAMPLE.ACCELERATIONS}x/{DATASETS.QDESS.ECHO_KIND}"
+MODEL:
+  META_ARCHITECTURE: "UnetModel"
+  UNET:
+    OUT_CHANNELS: 2
+    IN_CHANNELS: 2
+    CHANNELS: 32
+    NUM_POOL_LAYERS: 4
+    DROPOUT: 0.0
+    BLOCK_ORDER: 
+    - conv
+    - instancenorm
+    - - leakyrelu
+      - negative_slope: 0.2
+    - dropout
+  RECON_LOSS:
+    NAME: "l1"
+    RENORMALIZE_DATA: False
+AUG_TRAIN:
+  UNDERSAMPLE:
+    ACCELERATIONS: ()  # TODO - Acceleration to use for undersampling during training
+    PRECOMPUTE:
+      NUM: 100000
+      SEED: -1
+AUG_TEST:
+  UNDERSAMPLE:
+    ACCELERATIONS: ()  # TODO - Acceleration to use for undersampling during testing
+DATASETS:
+  TRAIN: ("skmtea_v1_train",)
+  VAL: ("skmtea_v1_val",)
+  TEST: ("skmtea_v1_test",)
+  QDESS:
+    ECHO_KIND: ""  # TODO - one of ["echo1", "echo2", "echo1+echo2", "echo1-echo2-mc"]
+DATALOADER:
+  NUM_WORKERS: 8
+  SAMPLER_TRAIN: "GroupSampler"
+  GROUP_SAMPLER:
+    BATCH_BY: ("num_coils", "matrix_shape")
+    AS_BATCH_SAMPLER: True
+SOLVER:
+  OPTIMIZER: "Adam"
+  LR_SCHEDULER_NAME: ""
+  TRAIN_BATCH_SIZE: 24
+  TEST_BATCH_SIZE: 16
+  MAX_ITER: 20
+  BASE_LR: 1e-3
+  WEIGHT_DECAY: 0.0001
+  CHECKPOINT_PERIOD: 1
+TEST:
+  EVAL_PERIOD: 1
+  FLUSH_PERIOD: 1000
+  VAL_METRICS:
+    RECON: ("psnr", "psnr_scan", "psnr_mag", "psnr_mag_scan", "nrmse", "nrmse_scan", "nrmse_mag", "nrmse_mag_scan", "ssim (Wang)")
+VIS_PERIOD: -400
+TIME_SCALE: "epoch"
+SEED: 1000
+VERSION: 1

@@ -1,0 +1,71 @@
+# Config for U-Net as implemented in MedSegPy.
+# Implementation based on:
+#   - Desai et al. Technical considerations for semantic segmentation in MRI. ArXiv 2019.
+#   - Desai et al. "Deep learning for medical image segmentation". MICCAI 2018.
+MODEL:
+  TASKS: ("sem_seg",)
+  PARAMETERS:
+    INIT:
+    - 
+      kind: "conv"
+      patterns: (".*weight", ".*bias")
+      initializers: (("kaiming_normal_", {"nonlinearity":"relu"}), "zeros_")
+    - 
+      kind: "norm"
+      patterns: (".*weight", ".*bias")
+      initializers: ("ones_", "zeros_")
+    -
+      patterns: ("output_block\.weight",)
+      initializers: ("xavier_uniform_",)
+  META_ARCHITECTURE: "GeneralizedUNet"
+  UNET:
+    CHANNELS: 32
+    NUM_POOL_LAYERS: 5
+    DROPOUT: 0.0
+    BLOCK_ORDER: ("conv", "relu", "conv", "relu", "bn")
+  SEG:
+    LOSS_NAME: "FlattenedDiceLoss"
+    CLASSES: ("pc", "fc", "men", "tc")
+DATASETS:
+  TRAIN: ("skmtea_v1_train",)
+  VAL: ("skmtea_v1_val",)
+  TEST: ("skmtea_v1_test",)
+  QDESS:
+    ECHO_KIND: ""  # This must be specified - one of ("echo1", "echo2", "echo1-echo2-mc", "rss")
+    DATASET_TYPE: "qDESSImageDataset"
+    KWARGS: ("orientation", "sagittal")
+DATALOADER:
+  NUM_WORKERS: 8
+  GROUP_SAMPLER:
+    BATCH_BY: ("inplane_shape",)
+    AS_BATCH_SAMPLER: True
+SOLVER:
+  OPTIMIZER: "Adam"
+  LR_SCHEDULER_NAME: "StepLR"
+  GAMMA: 0.9
+  STEPS: (2,)  # drop by 0.9x every 2 epochs
+  BASE_LR: 1e-3
+  MIN_LR: 1e-8
+  TRAIN_BATCH_SIZE: 16
+  TEST_BATCH_SIZE: 16
+  MAX_ITER: 100
+  WEIGHT_DECAY: 0.
+  CHECKPOINT_PERIOD: 1
+  EARLY_STOPPING:
+    MONITOR: "val_loss"
+    PATIENCE: 12
+    MIN_DELTA: 1e-5
+DESCRIPTION:
+  BRIEF: f"UNet segmentation following parameters used in MedSegPy - input={DATASETS.QDESS.ECHO_KIND}, {SOLVER.MAX_ITER} epochs, {SOLVER.BASE_LR} lr w/ {SOLVER.GAMMA}x decay every {SOLVER.STEPS} epochs, early stopping- T={SOLVER.EARLY_STOPPING.PATIENCE}, delta={SOLVER.EARLY_STOPPING.MIN_DELTA}, bsz={SOLVER.TRAIN_BATCH_SIZE}, qdess args={DATASETS.QDESS.KWARGS}"
+  EXP_NAME: f"seg-baseline/unet-medsegpy-{DATASETS.QDESS.ECHO_KIND}-seed={SEED}"
+  TAGS: ("seg-baseline", "baseline", "unet-medsegpy", "neurips")
+TEST:
+  EVAL_PERIOD: 1
+  VAL_METRICS:
+    SEM_SEG: ("DSC","VOE","CV","DSC_scan","VOE_scan","CV_scan")
+  FLUSH_PERIOD: -5
+VIS_PERIOD: -100
+TIME_SCALE: "epoch"
+OUTPUT_DIR: f"results://skm-tea/seg-baseline/unet-{DATASETS.QDESS.ECHO_KIND}-seed={SEED}"
+SEED: 9001
+VERSION: 1
