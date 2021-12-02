@@ -17,7 +17,7 @@ import torch
 from meddlr.config import get_cfg
 from meddlr.evaluation.testing import check_consistency, find_weights
 from meddlr.utils import comm
-from meddlr.utils.env import supports_wandb
+from meddlr.utils.env import get_path_manager, supports_wandb
 
 from skm_tea import config  # noqa: F401 (required for setting default config)
 from skm_tea.engine import (
@@ -39,11 +39,12 @@ def setup(args):
     Create configs and perform basic setups.
     """
     cfg = get_cfg()
-    cfg.merge_from_file(args.config_file)
+    cfg.merge_from_file(get_path_manager().get_local_path(args.config_file))
     opts = args.opts
     if opts and opts[0] == "--":
         opts = opts[1:]
     cfg.merge_from_list(opts)
+    cfg.format_fields(unroll=True)
     cfg.freeze()
 
     if not cfg.OUTPUT_DIR:
@@ -101,9 +102,12 @@ def main(args, pl_module=None):
         trainer.fit(model)
 
     # Evaluation
-    weights, _, _ = find_weights(
-        cfg, criterion="loss", iter_limit=None, file_name_fmt="global_step={:07d}-.*\.ckpt"
-    )
+    if args.eval_only and cfg.MODEL.WEIGHTS:
+        weights = get_path_manager().get_local_path(cfg.MODEL.WEIGHTS)
+    else:
+        weights, _, _ = find_weights(
+            cfg, criterion="loss", iter_limit=None, file_name_fmt="global_step={:07d}-.*\.ckpt"
+        )
     state_dict = torch.load(weights)["state_dict"]
     model.to(cfg.MODEL.DEVICE)
     model.load_state_dict(state_dict)

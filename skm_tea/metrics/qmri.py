@@ -34,6 +34,7 @@ class QuantitativeKneeMRI(Metric):
     """
 
     _SUPPORTED_TISSUES = {"fc", "tc", "pc", "men"}
+    is_differentiable = False
 
     def __init__(
         self,

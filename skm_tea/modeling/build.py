@@ -5,6 +5,8 @@ from meddlr.modeling.meta_arch import META_ARCH_REGISTRY
 
 logger = logging.getLogger(__name__)
 
+__all__ = ["build_model"]
+
 
 def build_model(cfg, in_channels=None, out_channels=None, **kwargs):
     """

@@ -30,6 +30,8 @@ from skm_tea.data.register import seg_categories_to_idxs
 from skm_tea.metrics.qmri import QuantitativeKneeMRI
 from skm_tea.utils import env
 
+__all__ = ["SkmTeaEvaluator"]
+
 
 class SkmTeaEvaluator(ScanEvaluator):
     """SKM-TEA evaluator for reconstruction, segmentation, and qMRI metrics."""

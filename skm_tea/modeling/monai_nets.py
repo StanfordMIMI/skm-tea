@@ -9,7 +9,7 @@ from meddlr.modeling.meta_arch.build import META_ARCH_REGISTRY
 from monai.networks.nets import UNet, VNet
 from monai.networks.nets.dynunet import DynUNet
 
-__all__ = ["VNetMONAI"]
+__all__ = ["VNetMONAI", "UNetMONAI", "DynUNetMONAI"]
 
 
 def cfg_to_kwargs(cfg, klass, arg_cfg_map=None, skip_args=None):

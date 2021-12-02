@@ -56,14 +56,31 @@ def get_version():
     return version
 
 
+# ---------------------------------------------------
+# Setup Information
+# ---------------------------------------------------
+NAME = "skm-tea"
+DESCRIPTION = "A package for interacting with, visualizing, and benchmarking the SKM-TEA dataset"
+VERSION = get_version()
+AUTHOR = "The SKM-TEA Team"
+EMAIL = "arjundd@stanford.edu"
+URL = "https://github.com/StanfordMIMI/skm-tea"
+REQUIRES_PYTHON = ">=3.6"
+
+with open("README.md", "r", encoding="utf-8") as fh:
+    long_description = fh.read()
+
 setup(
-    name="skm-tea",
-    version=get_version(),
-    author="The SKM-TEA team",
-    url="",
-    description="A package for training on, interacting with, and visualizing the SKM-TEA dataset",
+    name=NAME,
+    version=VERSION,
+    author=AUTHOR,
+    author_email=EMAIL,
+    url=URL,
+    description=DESCRIPTION,
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     packages=find_packages(exclude=("configs", "tests", "*.tests", "*.tests.*", "tests.*")),
-    python_requires=">=3.6",
+    python_requires=REQUIRES_PYTHON,
     install_requires=[
         "h5py",
         "matplotlib",
@@ -72,7 +89,6 @@ setup(
         "dosma>=0.1.0",
         "iopath",
         "medpy",
-        "ismrmrd",
         "pandas",
         "tqdm",
         "xlrd",
@@ -83,12 +99,35 @@ setup(
     ],
     extras_require={
         "dev": [
+            # Formatting
+            "coverage",
             "flake8",
             "isort",
-            "black",
+            "black==21.10b0",
             "flake8-bugbear",
             "flake8-comprehensions",
-            "pre-commit",
+            "pre-commit>=2.9.3",
+            # Testing
+            "medpy",
+            "pooch",
+            "gdown",
+            # Documentation
+            "sphinx",
+            "sphinxcontrib-bibtex",
+            "sphinx-rtd-theme",
+            "m2r2",
         ]
+    },
+    classifiers=[
+        # Trove classifiers
+        # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    ],
+    # $ setup.py publish support.
+    cmdclass={
+        "upload": UploadCommand,
     },
 )

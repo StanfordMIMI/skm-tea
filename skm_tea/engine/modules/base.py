@@ -32,25 +32,40 @@ class PLModule(pl.LightningModule):
         model: nn.Module = None,
         loss_fn: Callable = None,
         eval_on_cpu: bool = False,
+        deployment: bool = False,
     ):
+        """
+        Args:
+            cfg (CfgNode): The config.
+            num_parallel (int, optional): The number of GPUs to use.
+            model (nn.Module, optional): The model to use.
+            loss_fn (Callable, optional): The loss function to use.
+            eval_on_cpu (bool, optional): Whether to evaluate on CPU.
+            deployment (bool, optional): Whether to use deployment mode.
+                This will prevent building data modules used in the PyTorch Lightning
+                framework.
+        """
         super().__init__()
 
         # TODO: Configure the right place to do this.
         self.distributed = num_parallel > 1
         self.eval_on_cpu = eval_on_cpu
 
-        # Assume these objects must be constructed in this order.
-        data_loader = self.train_dataloader(cfg)
-        # TODO: Debug this to see if it works for data parallel
-        # num_iter_per_epoch = len(data_loader.dataset) / (cfg.SOLVER.TRAIN_BATCH_SIZE * num_parallel)  # noqa: E501
-        num_iter_per_epoch = len(data_loader)
-        if cfg.DATALOADER.DROP_LAST:
-            num_iter_per_epoch = int(num_iter_per_epoch)
+        if not deployment:
+            # Assume these objects must be constructed in this order.
+            data_loader = self.train_dataloader(cfg)
+            # TODO: Debug this to see if it works for data parallel
+            # num_iter_per_epoch = len(data_loader.dataset) / (cfg.SOLVER.TRAIN_BATCH_SIZE * num_parallel)  # noqa: E501
+            num_iter_per_epoch = len(data_loader)
+            if cfg.DATALOADER.DROP_LAST:
+                num_iter_per_epoch = int(num_iter_per_epoch)
+            else:
+                num_iter_per_epoch = math.ceil(num_iter_per_epoch)
+            self.iters_per_epoch = num_iter_per_epoch
+            cfg = convert_cfg_time_to_iter(cfg, num_iter_per_epoch)
+            del data_loader
         else:
-            num_iter_per_epoch = math.ceil(num_iter_per_epoch)
-        self.iters_per_epoch = num_iter_per_epoch
-        cfg = convert_cfg_time_to_iter(cfg, num_iter_per_epoch)
-        del data_loader
+            self.iters_per_epoch = None
 
         # Build model from config (if required).
         if model is None:

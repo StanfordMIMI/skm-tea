@@ -11,6 +11,7 @@ from typing import Any, Dict, Optional
 
 from iopath.common.file_io import PathHandler
 from meddlr.utils.cluster import Cluster
+from meddlr.utils.path import DownloadHandler, GoogleDriveHandler
 
 from skm_tea.utils import env
 
@@ -178,3 +179,5 @@ _path_mgr.register_handler(CacheHandler())
 _path_mgr.register_handler(AnnotationsHandler())
 _path_mgr.register_handler(KubernetesHandler())
 _path_mgr.register_handler(RsyncHandler())
+_path_mgr.register_handler(GoogleDriveHandler())
+_path_mgr.register_handler(DownloadHandler(_path_mgr))
