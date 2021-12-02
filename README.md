@@ -33,6 +33,9 @@ os.environ["MEDDLR_DATASETS_DIR"] = "/path/to/datasets"
 # TODO: Add how to easily fetch dataset.
 ```
 
+## 📝 Documentation
+Documentation for downloading and using the SKM-TEA dataset can be found in [DATASET.md](./DATASET.md). Benchmarks are constantly evolving - check this repository for up-to-date baselines.
+
 ## 🐘 Model Zoo
 A list of pre-trained models can be found [here](MODEL_ZOO.md) and in [Google Drive](https://drive.google.com/drive/folders/156cyINgx-x4uJasMBA6YPipdfOhg7cG5?usp=sharing). 
 
@@ -44,12 +47,9 @@ import skm_tea as st
 # Make sure to add "download://" before the url!
 model = st.get_model_from_zoo(
   cfg_or_file="download://https://drive.google.com/file/d/1DTSfmaGu2X9CpE5qW52ux63QrIs9L0oa/view?usp=sharing",
-  weights_file="download://https://drive.google.com/file/d/1no9-COhdT2Ai3yuxXpSYMpE76hbqZTWn/view?usp=sharing",
+  weights_path="download://https://drive.google.com/file/d/1no9-COhdT2Ai3yuxXpSYMpE76hbqZTWn/view?usp=sharing",
 )
 ```
-
-## 📝 Documentation
-Documentation for downloading and using the SKM-TEA dataset can be found in [DATASET.md](./DATASET.md). Benchmarks are constantly evolving - check this repository for up-to-date baselines.
 
 ## ✉️ About
 <a name="about"></a> 

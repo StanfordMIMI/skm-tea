@@ -172,6 +172,8 @@ def get_paths(version):
         mask_gradwarp_corrected=f"{data_dir}/segmentation_masks/raw-data-track",
         image_files=f"{data_dir}/image_files",
         recon_files=f"{data_dir}/files_recon_calib-24",
+        dicom_files=f"{data_dir}/dicoms",
+        dicom_masks=f"{data_dir}/segmentation_masks/dicom-track",
         ann_dir=f"{data_dir}/annotations/{version}",
     )
 
@@ -305,6 +307,12 @@ def load_skmtea_annotations(
         dd["gw_corr_mask_file"] = _path_mgr.get_local_path(
             os.path.join(paths.mask_gradwarp_corrected, f"{d['scan_id']}.nii.gz")
         )
+
+        # Dicom paths
+        dd["dicom_mask_file"] = _path_mgr.get_local_path(
+            os.path.join(paths.dicom_masks, f"{d['scan_id']}.nii.gz")
+        )
+        dd["dicom_dir"] = _path_mgr.get_local_path(os.path.join(paths.dicom_files, d["scan_id"]))
 
         # Drop keys that are not needed.
         for k in ["msp_id", "msp_file_name"]:
