@@ -3,9 +3,11 @@ import pathlib
 import re
 from typing import Any, Dict
 
+import meddlr.config.util as config_util
 import torch.nn as nn
 
 import skm_tea as st
+from skm_tea.utils import env
 
 from .. import util
 
@@ -33,6 +35,15 @@ def test_model_zoo_configs():
     """
     models = _parse_model_zoo()
     for name, model_info in models.items():
+        # Skip models that have failed dependencies (for now).
+        # TODO: Auto-configure github actions to run this test with different
+        # combinations of dependencies.
+        path_manager = env.get_path_manager()
+        cfg_file = path_manager.get_local_path(f"download://{model_info['cfg_url']}", force=True)
+        failed_deps = config_util.check_dependencies(cfg_file, return_failed_deps=True)
+        if len(failed_deps) > 0:
+            continue
+
         try:
             model = st.get_model_from_zoo(
                 f"download://{model_info['cfg_url']}",
@@ -41,7 +52,7 @@ def test_model_zoo_configs():
             )
             assert isinstance(model, nn.Module)
         except Exception as e:
-            raise type(e)(f"Failed to build model {name}:\n{e}")
+            raise type(e)(f"Failed to build model '{name}':\n{e}")
 
 
 def _parse_model_zoo() -> Dict[str, Dict[str, Any]]:
