@@ -1,7 +1,8 @@
 import itertools
 import logging
 import os
-from typing import Collection, Dict, Tuple, Union
+from functools import partial
+from typing import Any, Callable, Collection, Dict, Tuple, Union
 
 import meddlr.ops as oF
 import numpy as np
@@ -12,6 +13,7 @@ from meddlr.forward import SenseModel
 from meddlr.ops import complex as cplx
 from meddlr.utils import profiler
 from tqdm import tqdm
+from tqdm.contrib.concurrent import process_map
 
 from skm_tea.modeling.build import get_model_cfg
 from skm_tea.utils import env
@@ -46,6 +48,7 @@ class CachingSubsampler:
         mode="2D",
         cache: Union[bool, str] = False,
         read_only=True,
+        num_workers: int = 0,
     ):
         """Precomputes masks and keeps in memory.
 
@@ -133,19 +136,21 @@ class CachingSubsampler:
             if key in root:
                 continue
 
-            masks = []
+            mask_kwargs_base = {"shape": (1,) + acq_shape, "acceleration": acc}
             if seed is None:
-                with tqdm(total=N) as pbar:
-                    while len(masks) < N:
-                        try:
-                            mask = self.mask_func((1,) + acq_shape, seed=None, acceleration=acc)
-                            masks.append(mask)
-                            pbar.update(1)
-                        except ValueError:
-                            continue
+                seed = [None] * N
+            mask_kwargs = [mask_kwargs_base.copy() for _ in range(len(seed))]
+            for kwargs, p_seed in zip(mask_kwargs, seed):
+                kwargs.update({"seed": p_seed})
+
+            if num_workers > 0:
+                func = partial(_precompute_mask, mask_func=self.mask_func)
+                max_workers = min(num_workers, len(mask_kwargs))
+                masks = process_map(func, mask_kwargs, max_workers=max_workers)
             else:
-                for p_seed in tqdm(seed):
-                    masks.append(self.mask_func((1,) + acq_shape, seed=p_seed, acceleration=acc))
+                masks = []
+                for mkwargs in tqdm(mask_kwargs):
+                    masks.append(_precompute_mask(mkwargs, self.mask_func))
             masks = torch.cat(masks, dim=0).type(torch.bool).numpy()
 
             if isinstance(root, Dict):
@@ -500,3 +505,23 @@ class qDESSDataTransform(_DataTransform):
 
         # TODO: Add any transformation of segmentations, bounding boxes, etc.
         return example
+
+
+def _precompute_mask(mask_kwargs: Dict[str, Any], mask_func: Callable = None):
+    if mask_kwargs is None:
+        mask_kwargs = {}
+    mask_kwargs = mask_kwargs.copy()
+
+    seed = mask_kwargs.get("seed", None)
+    shape = mask_kwargs.pop("shape")
+
+    if seed is None:
+        out = None
+        while out is None:
+            try:
+                out = mask_func(shape, **mask_kwargs)
+            except ValueError:
+                continue
+        return out
+    else:
+        return mask_func(shape, **mask_kwargs)
