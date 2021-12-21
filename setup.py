@@ -90,7 +90,7 @@ setup(
         "iopath",
         "medpy",
         "pandas",
-        "tqdm",
+        "tqdm>=4.42.0",
         "xlrd",
         "monai>=0.3.0",
         "meddlr",

@@ -140,7 +140,12 @@ class SkmTeaDataModule(pl.LightningDataModule):
                 aug_cfg.UNDERSAMPLE.ACCELERATIONS = self.cfg.AUG_TEST.UNDERSAMPLE.ACCELERATIONS
                 aug_cfg.freeze()
                 assert len(aug_cfg.UNDERSAMPLE.ACCELERATIONS) == 1
-            mask_func = build_mask_func(aug_cfg)
+            # Use sigpy backend for Poisson Disc generation.
+            # Related to meddlr issue #3.
+            mask_func_kwargs = (
+                {"module": "sigpy"} if aug_cfg.UNDERSAMPLE.NAME == "PoissonDiskMaskFunc" else {}
+            )
+            mask_func = build_mask_func(aug_cfg, **mask_func_kwargs)
             data_transform = qDESSDataTransform(self.cfg, mask_func=mask_func, is_test=True)
             dataset_kwargs = {
                 k: v
@@ -164,6 +169,9 @@ class SkmTeaDataModule(pl.LightningDataModule):
                 data_transform._subsampler.precompute_masks(
                     acq_shapes={x["acq_shape"] for x in dataset.examples},
                     seed=list(set(dataset.get_undersampling_seeds())),
+                    num_workers=self.cfg.DATALOADER.NUM_WORKERS
+                    if aug_cfg.UNDERSAMPLE.PRECOMPUTE.USE_MULTIPROCESSING
+                    else 0,
                 )
             datasets.append(dataset)
         return datasets
@@ -178,7 +186,12 @@ class SkmTeaDataModule(pl.LightningDataModule):
             accelerations=cfg.AUG_TRAIN.UNDERSAMPLE.ACCELERATIONS,
             filter_by=cfg.DATALOADER.FILTER.BY,
         )
-        mask_func = build_mask_func(cfg.AUG_TRAIN)
+        # Use sigpy backend for Poisson Disc generation.
+        # Related to meddlr issue #3.
+        mask_func_kwargs = (
+            {"module": "sigpy"} if cfg.AUG_TRAIN.UNDERSAMPLE.NAME == "PoissonDiskMaskFunc" else {}
+        )
+        mask_func = build_mask_func(cfg.AUG_TRAIN, **mask_func_kwargs)
         data_transform = qDESSDataTransform(cfg, mask_func=mask_func, is_test=False)
         dataset_kwargs = {
             k: v for k, v in zip(cfg.DATASETS.QDESS.KWARGS[::2], cfg.DATASETS.QDESS.KWARGS[1::2])
@@ -200,6 +213,9 @@ class SkmTeaDataModule(pl.LightningDataModule):
                 N=cfg.AUG_TRAIN.UNDERSAMPLE.PRECOMPUTE.NUM,
                 seed=cfg.AUG_TRAIN.UNDERSAMPLE.PRECOMPUTE.SEED,
                 cache=_PRECOMPUTED_MASKS_CACHE_DIR,
+                num_workers=self.cfg.DATALOADER.NUM_WORKERS
+                if cfg.AUG_TRAIN.UNDERSAMPLE.PRECOMPUTE.USE_MULTIPROCESSING
+                else 0,
             )
         return dataset
 
