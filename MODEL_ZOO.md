@@ -4,7 +4,7 @@
 This file is a running document of baselines and state-of-the-art models for the SKM-TEA v1 dataset.
 
 
-### Reconstruction Baselines
+## Reconstruction Baselines
 
 | Name                       | Input        | Train Acc.   | Description                                        | Download                                                                                                                                                                                                                                                                                                                                                                                    |
 |:---------------------------|:-------------|:-------------|:---------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -26,7 +26,7 @@ This file is a running document of baselines and state-of-the-art models for the
 | U-Net E1$\oplus$E2 (8x)    | E1$\oplus$E2 | 8x           | 4 pooling, 32 base channels, leaky-relu activation | [gdrive](https://drive.google.com/drive/folders/16SqSLTgMYOwhWm2qyHF19BzmSLHGbexw?usp=sharing) \| [cfg](https://drive.google.com/file/d/1HoLlOsDZObPQxd0WCN9HidLT3s2Pkhz1/view?usp=sharing) \| [model](https://drive.google.com/file/d/1I0QqXwjhISyw6t-SW1IfOG3Bjzinw9xv/view?usp=sharing) \| [metrics](https://drive.google.com/file/d/1pDRmn_hTkM44GhVkuw_C6nWVTqK3PX6k/view?usp=sharing) |
 
 
-### Segmentation Baselines
+## Segmentation Baselines
 | Name               | Input        | Description                     | Download                                                                                                                                                                                                                                                                                                                                                                                    |
 |:-------------------|:-------------|:--------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | V-Net E1           | E1           | Monai v0.5.3                    | [gdrive](https://drive.google.com/drive/folders/1xth7If-Rlf7adimdhYPxtmyYqb3OUT4q?usp=sharing) \| [cfg](https://drive.google.com/file/d/1Mr47bkeeqoF-JZxus3bX6KOcd08x7nD8/view?usp=sharing) \| [model](https://drive.google.com/file/d/1tA2yeDf690dWctqysnlED1smxjU0eQJM/view?usp=sharing) \| [metrics](https://drive.google.com/file/d/1RHQY-p8IXR7tSNNhLL93aFZPXdAHYkHf/view?usp=sharing) |
