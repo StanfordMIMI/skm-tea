@@ -54,6 +54,26 @@ class SkmTeaEvaluator(ScanEvaluator):
         tasks=("recon",),
         use_qmri: bool = False,
     ):
+        """
+        Args:
+            dataset_name (str): The name of the dataset (e.g. 'skm_tea_v1_test').
+            cfg (CfgNode): The config.
+            distributed (bool, optional): Set to ``True`` if program is being run
+                in distributed mode (e.g. using DistributedDataParallel).
+            sync_outputs (bool, optional): If ``True`` and ``distributed=True``,
+                synchronize outputs between processes.
+            aggregate_scans (bool, optional): If ``True``, aggregate slices/patches
+                into a scan to compute scan metrics.
+            output_dir (str, optional): The directory to save the output files.
+            group_by_scan (bool, optional): If ``True``, ``.evaluate()`` will
+                return a dictionary of scan_id -> {metric1: value1, metric2: value2, ...}.
+            skip_rescale (bool, optional): If ``True``, do not undo the normalization
+                done to the kspace data. This should be ``False`` when computing metrics
+                for comparable results.
+            save_scans (bool, optional): If ``True``, save the scan predictions to disk.
+            recon_metrics (Sequence[str], optional): A list of metrics for reconstruction.
+                E.g. ``'psnr'``, ``'ssim'``, ``'ms_ssim'``, ``'ms_ssim_full'``,
+        """
         # self._tasks = self._tasks_from_config(cfg)
         self._output_dir = output_dir
         if self._output_dir:
