@@ -89,6 +89,7 @@ setup(
         "dosma>=0.1.0",
         "iopath",
         "medpy",
+        "packaging",
         "pandas",
         "tqdm>=4.42.0",
         "xlrd",

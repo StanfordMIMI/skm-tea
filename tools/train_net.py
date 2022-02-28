@@ -17,7 +17,8 @@ import torch
 from meddlr.config import get_cfg
 from meddlr.evaluation.testing import check_consistency, find_weights
 from meddlr.utils import comm
-from meddlr.utils.env import get_path_manager, supports_wandb
+from meddlr.utils.env import get_package_version, get_path_manager, supports_wandb
+from packaging import version
 
 from skm_tea import config  # noqa: F401 (required for setting default config)
 from skm_tea.engine import (
@@ -74,6 +75,7 @@ def setup(args):
 
 def main(args, pl_module=None):
     cfg = setup(args)
+    ptl_version = version.Version(get_package_version("pytorch_lightning"))
 
     if args.devices:
         gpus = args.devices
@@ -89,14 +91,20 @@ def main(args, pl_module=None):
     if pl_module is None:
         pl_module = SkmTeaModule if "recon" in cfg.MODEL.TASKS else SkmTeaSemSegModule
     model = pl_module(cfg, num_parallel=num_gpus, eval_on_cpu=args.eval_on_cpu)
+
+    trainer_kwargs = {
+        "strategy"
+        if ptl_version >= version.Version("1.5.0")
+        else "distributed_backend": distributed_backend,
+    }
     trainer = PLDefaultTrainer(
         cfg,
         model.iters_per_epoch,
         gpus=gpus,
         auto_select_gpus=auto_select_gpus,
         resume=args.resume,
-        distributed_backend=distributed_backend,
         eval_only=args.eval_only,
+        **trainer_kwargs,
     )
     if not args.eval_only:
         trainer.fit(model)

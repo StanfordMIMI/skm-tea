@@ -5,8 +5,9 @@ fvcore
 dosma>=0.1.0
 iopath
 medpy
+packaging
 pandas
-tqdm
+tqdm>=4.42.0
 xlrd
 monai>=0.3.0
 meddlr
