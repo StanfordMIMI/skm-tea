@@ -139,7 +139,7 @@ class SkmTeaRawDataset(SliceData):
                 "total": vol,
                 "echo1": vol[..., 0, :],
                 "echo2": vol[..., 1, :],
-                "rss": np.sqrt(np.sum(vol ** 2, axis=-2)),
+                "rss": np.sqrt(np.sum(vol**2, axis=-2)),
             }
             scan_stats = {
                 k: {fname: func(v) for fname, func in funcs.items()} for k, v in input_types.items()
