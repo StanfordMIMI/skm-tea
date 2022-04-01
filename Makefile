@@ -19,5 +19,5 @@ test-cov:
 	pytest tests/ --cov=./ --cov-report=xml
 
 dev:
-	pip install --upgrade black==21.10b0 coverage isort flake8 flake8-bugbear flake8-comprehensions pytest pre-commit
+	pip install --upgrade black==22.3.0 coverage isort flake8 flake8-bugbear flake8-comprehensions pytest pre-commit
 	pre-commit install

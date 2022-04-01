@@ -104,7 +104,7 @@ setup(
             "coverage",
             "flake8",
             "isort",
-            "black==21.10b0",
+            "black==22.3.0",
             "flake8-bugbear",
             "flake8-comprehensions",
             "pre-commit>=2.9.3",
