@@ -113,7 +113,12 @@ class SkmTeaEvaluator(ScanEvaluator):
                 "Cannot compute qMRI metrics with only echo1 or echo2. "
                 "Both echos must be present."
             )
-        if cfg.DATASETS.QDESS.ECHO_KIND == "echo1" and "recon/echo2" not in self.additional_paths:
+        if (
+            use_qmri
+            and ("recon" in tasks)
+            and cfg.DATASETS.QDESS.ECHO_KIND == "echo1"
+            and "recon/echo2" not in self.additional_paths
+        ):
             raise ValueError(
                 "Cannot compute qMRI merics with only echo1. Must specify additional path to echo2"
             )

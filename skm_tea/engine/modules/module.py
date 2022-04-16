@@ -161,7 +161,19 @@ class SkmTeaModule(ReconModule):
 
         echo_kind = cfg.DATASETS.QDESS.ECHO_KIND
         structure_channel_by = "echo" if echo_kind == "echo1+echo2" else None
-        use_qmri = aggregate_scans and echo_kind != "echo2"
+
+        # Reconstruction tasks should only perform qMRI evaluation if both
+        # echos are present or if path to second echo scans are specified
+        if "recon" in self.tasks:
+            use_qmri = aggregate_scans and echo_kind != "echo2"
+            if (
+                use_qmri
+                and echo_kind == "echo1"
+                and "recon/echo2" not in cfg.TEST.QDESS_EVALUATOR.ADDITIONAL_PATHS
+            ):
+                use_qmri = False
+        else:
+            use_qmri = aggregate_scans
 
         if self._stage == "test":
             evaluators.append(
