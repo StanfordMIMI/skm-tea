@@ -15,15 +15,6 @@ REPO_DIR = pathlib.Path(os.path.abspath(os.path.join(os.path.dirname(__file__), 
 LOCAL_MODEL_ZOO_FILE = REPO_DIR / "MODEL_ZOO.md"
 
 
-def test_build_deployment_model():
-    model = st.get_model_from_zoo(
-        cfg_or_file="download://https://drive.google.com/file/d/1BJc_lidyHyZvkFD4pLDfSH2Gp2gWXPww/view?usp=sharing",  # noqa: E501
-        weights_path="download://https://drive.google.com/file/d/1EkSdXtnD_28_pjZeVFD6XtYugU7VM3jo/view?usp=sharing",  # noqa: E501
-        force_download=True,
-    )
-    assert isinstance(model, nn.Module)
-
-
 def test_model_zoo_configs():
     """
     Test that all models in the zoo can be built with the appropriate config
