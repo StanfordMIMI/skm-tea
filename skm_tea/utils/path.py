@@ -99,7 +99,12 @@ class FileSyncHandler(GeneralPathHandler):
         return subprocess.run(f"rsync -av {remote_path} {cache_path}", shell=True, check=True)
 
     def _get_local_path(
-        self, path: str, force: bool = False, cache_dir: Optional[str] = None, **kwargs: Any
+        self,
+        path: str,
+        force: bool = False,
+        cache_dir: Optional[str] = None,
+        ftype=None,
+        **kwargs: Any,
     ) -> str:
         """
         This implementation downloads the remote resource and caches it locally.
@@ -108,11 +113,10 @@ class FileSyncHandler(GeneralPathHandler):
         remote_path = path[len(self.PREFIX) :]
         cached = self._cached_path(path, cache_dir)
         self._check_kwargs(kwargs)
-
         if force or not os.path.exists(cached):
             logger = logging.getLogger(__name__)
             logger.info("Downloading {} ...".format(remote_path))
-            self.download(remote_path, cached)
+            self.download(remote_path, cached, ftype=ftype)
             # with file_lock(cached):
             #     if not os.path.exists(cached):
             #         logger.info("Downloading {} ...".format(remote_path))
@@ -134,10 +138,10 @@ class RsyncHandler(FileSyncHandler):
         remote, path = tuple(remote_path.split(":", maxsplit=1))
         return os.path.join(cache_dir, "rsync", remote, os.path.abspath(path)[1:])
 
-    def download(self, remote_path, cache_path):
+    def download(self, remote_path, cache_path, ftype=None):
         dirpath = (
             os.path.dirname(cache_path)
-            if re.match(".*\..*$", os.path.basename(cache_path))
+            if re.match(".*\..*$", os.path.basename(cache_path)) or ftype == "file"
             else cache_path
         )
         os.makedirs(dirpath, exist_ok=True)
@@ -147,24 +151,27 @@ class RsyncHandler(FileSyncHandler):
 class KubernetesHandler(FileSyncHandler):
     PREFIX = "kube://"
 
+    def _split_remote_path(self, remote_path):
+        return tuple(str(remote_path).split(":", maxsplit=1))
+
     def _cached_path(self, path, cache_dir=None):
         if cache_dir is None:
             cache_dir = Cluster.working_cluster().cache_dir
         remote_path = path[len(self.PREFIX) :]
-        remote, path = tuple(remote_path.split(":", maxsplit=1))
+        remote, path = self._split_remote_path(remote_path)
         return os.path.join(cache_dir, "kubernetes", remote, os.path.abspath(path)[1:])
 
-    def download(self, remote_path, cache_path):
+    def download(self, remote_path, cache_path, ftype=None):
         cwd = os.getcwd()
         dirpath = (
             os.path.dirname(cache_path)
-            if re.match(".*\..*$", os.path.basename(cache_path))
+            if re.match(".*\..*$", os.path.basename(cache_path)) or ftype == "file"
             else cache_path
         )
         os.makedirs(dirpath, exist_ok=True)
         try:
             os.chdir(os.path.expanduser("~"))
-            cmd = f"kubectl cp {remote_path} {cache_path}"
+            cmd = f"kubectl cp {remote_path} {cache_path} --retries=5"
             print(cmd)
             out = subprocess.run(cmd, shell=True, check=True)
         finally:
