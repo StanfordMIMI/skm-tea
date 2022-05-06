@@ -2,6 +2,7 @@
 [**Paper**](https://openreview.net/forum?id=YDMFgD_qJuA)
 | [**Dataset Download**](https://stanfordaimi.azurewebsites.net/datasets/4aaeafb9-c6e6-4e3c-9188-3aaaf0e0a9e7)
 | [**Dataset Docs**](./DATASET.md)
+| [**Tutorial**](https://colab.research.google.com/drive/1PluqK77pobD5dXE7zzBLEAeBgaaeGKXa)
 | [**About**](#about)
 
 The 2021 Stanford Knee MRI with Multi-Task Evaluation (SKM-TEA) dataset pairs raw quantitative MRI (qMRI) data, image data, and dense labels of tissues and pathology for end-to-end exploration and evaluation of the MR imaging pipeline.
