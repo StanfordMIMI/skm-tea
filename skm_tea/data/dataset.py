@@ -246,11 +246,12 @@ class SkmTeaRawDataset(SliceData):
         slice_id = example["slice_id"]
         scan_id = example["scan_id"]
         output = {}
+        h5manager = self._hdf5_manager
 
         # Load recon info.
         fp = example.pop("recon_file")
-        if not hasattr(self, "file_manager"):
-            self._load_files()
+        # if not hasattr(self, "file_manager"):
+        #     self._load_files()
 
         # Determine orientation
         orientation = example["orientation"]
@@ -258,16 +259,18 @@ class SkmTeaRawDataset(SliceData):
         affine = dm.to_affine(orientation, spacing=voxel_spacing)
 
         timer.start(_READ_DATA)
-        with self.file_manager.yield_file(fp) as data:
-            output["target"] = data[self.mapping["target"]][slice_id, ..., example["echo"], :]
+        with h5manager.temp_open(fp, "r"):
+            sl = (slice_id, Ellipsis, example["echo"], slice(None))
+            output["target"] = h5manager.get(fp, self.mapping["target"], sl)
             if self.use_recon:
-                output["kspace"] = data[self.mapping["kspace"]][slice_id, ..., example["echo"], :]
-                output["maps"] = data[self.mapping["maps"]][slice_id]
+                output["kspace"] = h5manager.get(fp, self.mapping["kspace"], sl)
+                output["maps"] = h5manager.get(fp, self.mapping["maps"], slice_id)
                 if self.split == "test":
                     acc = self.transform._subsampler.mask_func.accelerations
                     assert len(acc) == 1
                     acc = acc[0]
-                    output["mask"] = torch.from_numpy(data[f"masks/poisson_{float(acc)}x"][()])
+                    mask = h5manager.get(fp, f"masks/poisson_{float(acc)}x", ())
+                    output["mask"] = torch.from_numpy(mask)
 
         if self.echo_type == "echo1-echo2-mc":
             output["target"] = output["target"][..., 0]
@@ -526,8 +529,8 @@ class SkmTeaDicomDataset(SkmTeaRawDataset):
         # scan_id = example["scan_id"]
         # img_key = self.echo_type
 
-        if not hasattr(self, "file_manager"):
-            self._load_files()
+        # if not hasattr(self, "file_manager"):
+        #     self._load_files()
 
         # Construct slice.
         sl = [slice(None), slice(None), slice(None)]
@@ -543,8 +546,8 @@ class SkmTeaDicomDataset(SkmTeaRawDataset):
         # data = self.files[example.pop("recon_file")]
         # output["target"] = data[self.mapping["target"]][slice_id, ..., example["echo"], :]
         filepath = example.get("image_file")
-        with self.file_manager.yield_file(filepath) as data:
-            inputs = {k: data[k][sl] for k in self.keys_to_load}
+        with self._hdf5_manager.temp_open(filepath, "r"):
+            inputs = {k: self._hdf5_manager.get(filepath, k, sl) for k in self.keys_to_load}
         output = self.preprocess(example, inputs, file_key="image_file")
 
         # Do transformation before annotations are converted to 2D instances.

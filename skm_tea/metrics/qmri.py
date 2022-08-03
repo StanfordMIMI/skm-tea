@@ -163,10 +163,10 @@ class QuantitativeKneeMRI(Metric):
                 }
                 signature = inspect.signature(tissue.set_mask)
                 kwargs = {k: v for k, v in kwargs.items() if k in signature.parameters}
-                tissue.set_mask(sem_seg_mv, **kwargs)
+                tissue.set_mask(sem_seg_mv.to("cpu"), **kwargs)
 
                 # Compute regional quantitative analysis
-                tissue.add_quantitative_value(T2(qmap))
+                tissue.add_quantitative_value(T2(qmap.to("cpu")))
                 tissue.calc_quant_vals()
                 if output_dir:
                     tissue.save_quant_data(os.path.join(output_dir, scan_id, tissue_key))
