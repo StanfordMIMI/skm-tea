@@ -94,7 +94,7 @@ setup(
         "tqdm>=4.42.0",
         "xlrd",
         "monai>=0.3.0",
-        "meddlr",
+        "meddlr>=0.0.5",
         "pytorch-lightning>=1.0.0",
         "zarr",
     ],

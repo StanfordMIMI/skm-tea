@@ -1,8 +1,12 @@
+from typing import Sequence
+
 import pytorch_lightning as pl
+from meddlr.config.config import CfgNode
 from meddlr.data.build import _build_dataset, get_recon_dataset_dicts
 from meddlr.data.samplers.build import build_train_sampler, build_val_sampler
 from meddlr.data.transforms.subsample import build_mask_func
-from torch.utils.data import DataLoader
+from meddlr.utils import comm
+from torch.utils.data import DataLoader, Dataset
 
 from skm_tea.data.collate import default_collate
 from skm_tea.data.dataset import SkmTeaDicomDataset, SkmTeaRawDataset
@@ -67,12 +71,18 @@ class SkmTeaDataModule(pl.LightningDataModule):
         self.validation_datasets = self._make_eval_datasets(cfg.DATASETS.VAL, split="val")
         self.test_datasets = self._make_eval_datasets(cfg.DATASETS.TEST, split="test")
 
-    def train_dataloader(self, cfg=None, use_ddp=False):
+    def train_dataloader(self, cfg: CfgNode = None, use_ddp: bool = False):
         if cfg is None:
             cfg = self.cfg
             dataset = self._build_train_dataset(cfg)
         else:
             dataset = self.train_dataset
+
+        # Split batch size among the different data parallel processes.
+        world_size = comm.get_world_size()
+        if cfg.SOLVER.TRAIN_BATCH_SIZE % world_size != 0:
+            raise ValueError("Batch size must be divisible by number of data replicas.")
+        local_batch_size = cfg.SOLVER.TRAIN_BATCH_SIZE // world_size
 
         # Build sampler.
         sampler, is_batch_sampler = build_train_sampler(cfg, dataset, distributed=use_ddp)
@@ -82,7 +92,7 @@ class SkmTeaDataModule(pl.LightningDataModule):
         else:
             dl_kwargs = {
                 "sampler": sampler,
-                "batch_size": cfg.SOLVER.TRAIN_BATCH_SIZE,
+                "batch_size": local_batch_size,
                 "shuffle": shuffle,
                 "drop_last": cfg.DATALOADER.DROP_LAST,
             }
@@ -219,22 +229,33 @@ class SkmTeaDataModule(pl.LightningDataModule):
             )
         return dataset
 
-    def _build_eval_dataloaders(self, datasets, cfg, use_ddp):
+    def _build_eval_dataloaders(self, datasets: Sequence[Dataset], cfg, use_ddp: bool):
         dataloaders = []
+
+        # Split batch size among the different data parallel processes.
+        world_size = comm.get_world_size()
+        if cfg.SOLVER.TRAIN_BATCH_SIZE % world_size != 0:
+            raise ValueError("Batch size must be divisible by number of data replicas.")
+        local_batch_size = cfg.SOLVER.TRAIN_BATCH_SIZE // world_size
+
         for dataset in datasets:
+            # Distributed samplers hang during validation.
+            # As a stopgap solution, use the standard sequential sampler instead.
+            # This is inefficient because each process evaluates the entire dataset.
+            # TODO: Determine why sequential sampler is hanging.
             sampler, is_batch_sampler = build_val_sampler(
-                cfg, dataset, distributed=use_ddp, dist_group_by="scan_id"
+                cfg, dataset, distributed=False, dist_group_by="scan_id"
             )
+            # sampler = DistributedSampler(dataset, shuffle=False)
             if is_batch_sampler:
                 dl_kwargs = {"batch_sampler": sampler}
             else:
                 dl_kwargs = {
                     "sampler": sampler,
-                    "batch_size": cfg.SOLVER.TEST_BATCH_SIZE,
+                    "batch_size": local_batch_size,
                     "shuffle": False,
                     "drop_last": False,
                 }
-
             dataloaders.append(
                 DataLoader(
                     dataset=dataset,

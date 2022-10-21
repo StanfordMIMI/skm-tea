@@ -1,5 +1,6 @@
 """Functions and datasets for the SKM-TEA dataset."""
 from skm_tea.data import collate, data_module, dataset, register, transform
+from skm_tea.data.dataset import SkmTeaDicomDataset, SkmTeaRawDataset  # noqa: F401
 
 __all__ = []
 __all__.extend(collate.__all__)

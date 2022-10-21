@@ -44,6 +44,27 @@ class SkmTeaModule(ReconModule):
             self._datamodule_.setup()
         self.seg_classes = self.cfg.MODEL.SEG.CLASSES
 
+    def _get_iters_per_epoch(self, cfg, num_data_replicas: int = 1) -> int:
+        if num_data_replicas == 1:
+            return len(self.train_dataloader(cfg))
+
+        if not cfg:
+            cfg = self.cfg
+        if not hasattr(self, "_datamodule_") or not self._datamodule_:
+            datamodule = self._build_datamodule(cfg)
+            datamodule.prepare_data()
+            datamodule.setup()
+        else:
+            datamodule = self._datamodule_
+        train_ds = datamodule._build_train_dataset(cfg)
+
+        return _get_iters_per_epoch(
+            train_ds,
+            global_batch_size=cfg.SOLVER.TRAIN_BATCH_SIZE,
+            num_replicas=num_data_replicas,
+            drop_last=cfg.DATALOADER.DROP_LAST,
+        )
+
     def _build_datamodule(self, cfg):
         return SkmTeaDataModule(cfg, self.tasks, self.distributed)
 
@@ -344,3 +365,21 @@ class SkmTeaSemSegModule(SkmTeaModule):
 
             visualizations = {f"{prefix}/{name}": img for name, img in visualizations.items()}
             wandb_logger.experiment.log({"global_step": self.trainer.global_step, **visualizations})
+
+
+def _get_iters_per_epoch(
+    ds, global_batch_size: int, num_replicas: int = 1, drop_last: bool = False
+):
+    if num_replicas == 1:
+        x = len(ds) / global_batch_size
+        return int(np.floor(x)) if drop_last else int(np.ceil(x))
+
+    # Batch size per data process.
+    if global_batch_size % num_replicas != 0:
+        raise ValueError("Global batch size must be divisible by the number of replicas.")
+    local_batch_size = global_batch_size // num_replicas
+
+    # Elements get repeated in DistributedSampler.
+    count_per_replica = int(np.ceil(len(ds) / num_replicas))
+    x = count_per_replica / local_batch_size
+    return int(np.floor(x)) if drop_last else int(np.ceil(x))

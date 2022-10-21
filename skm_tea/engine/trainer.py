@@ -42,11 +42,10 @@ class PLDefaultTrainer(pl.Trainer):
         self,
         cfg,
         iters_per_epoch: int,
-        log_gpu_memory=None,
-        replace_sampler_ddp=False,
-        num_gpus=0,
-        resume=False,
-        eval_only=False,
+        replace_sampler_ddp: bool = False,
+        num_gpus: int = 0,
+        resume: bool = False,
+        eval_only: bool = False,
         **kwargs,
     ):
         logger = logging.getLogger("skm_tea")
@@ -86,8 +85,6 @@ class PLDefaultTrainer(pl.Trainer):
                 cfg.TEST.EVAL_PERIOD, kwargs.get("limit_train_batches", float("inf"))
             ),
             accumulate_grad_batches=cfg.SOLVER.GRAD_ACCUM_ITERS,
-            log_gpu_memory=log_gpu_memory,
-            checkpoint_callback=False,
             sync_batchnorm=False,
             profiler=SimpleProfiler(dirpath=cfg.OUTPUT_DIR, filename="profile.txt"),
             log_every_n_steps=5,
