@@ -4,6 +4,7 @@ import time
 from collections import Counter
 from typing import Any, Callable, Dict, Sequence, Union
 
+import numpy as np
 import pytorch_lightning as pl
 import torch
 from meddlr.data import build_recon_train_loader, build_recon_val_loader
@@ -12,6 +13,7 @@ from meddlr.evaluation.testing import flatten_results_dict, print_csv_format
 from meddlr.modeling import build_model, initialize_model
 from meddlr.modeling.loss_computer import LossComputer
 from meddlr.solver import build_lr_scheduler, build_optimizer
+from meddlr.utils import comm
 from pytorch_lightning.utilities import rank_zero_only
 from torch import nn
 
@@ -52,18 +54,13 @@ class PLModule(pl.LightningModule):
         self.eval_on_cpu = eval_on_cpu
 
         if not deployment:
-            # Assume these objects must be constructed in this order.
-            data_loader = self.train_dataloader(cfg)
-            # TODO: Debug this to see if it works for data parallel
-            # num_iter_per_epoch = len(data_loader.dataset) / (cfg.SOLVER.TRAIN_BATCH_SIZE * num_parallel)  # noqa: E501
-            num_iter_per_epoch = len(data_loader)
+            num_iter_per_epoch = self._get_iters_per_epoch(cfg, num_data_replicas=num_parallel)
             if cfg.DATALOADER.DROP_LAST:
                 num_iter_per_epoch = int(num_iter_per_epoch)
             else:
                 num_iter_per_epoch = math.ceil(num_iter_per_epoch)
             self.iters_per_epoch = num_iter_per_epoch
             cfg = convert_cfg_time_to_iter(cfg, num_iter_per_epoch)
-            del data_loader
         else:
             self.iters_per_epoch = None
 
@@ -87,6 +84,12 @@ class PLModule(pl.LightningModule):
 
         self.std_log = logging.getLogger(__name__)
         self._stage = None
+
+    def _get_iters_per_epoch(self, cfg, num_data_replicas: int = 1) -> int:
+        # Assume these objects must be constructed in this order.
+        if num_data_replicas == 1:
+            return len(self.train_dataloader(cfg))
+        raise ValueError("Not implemented for distributed training.")
 
     def train_dataloader(self, cfg=None):
         if cfg is None:
@@ -123,12 +126,15 @@ class PLModule(pl.LightningModule):
 
     def training_step(self, inputs: Dict[str, Any], batch_idx):
         assert self.model.training, f"{self._get_name()} model was changed to eval mode!"
-        data_time = torch.tensor(self.trainer.profiler.recorded_durations["get_train_batch"][-1])
-        profile_times = {
-            k: self.trainer.profiler.recorded_durations.get(k, [0.0])
-            for k in ["training_step_and_backward", "run_training_batch", "get_train_batch"]
-        }
-        profile_times = {k: torch.as_tensor(v[-1]) for k, v in profile_times.items() if len(v)}
+        # data_time = torch.tensor(self.trainer.profiler.recorded_durations["get_train_batch"][-1])
+        durations = self.trainer.profiler.recorded_durations
+        profile_tags = {"data_time": "train_dataloader_next", "step_time": "run_training_batch"}
+        profile_times = {}
+        for tag, key in profile_tags.items():
+            available_keys = [k for k in durations if key in k]
+            values = [durations[k][-1] for k in available_keys]
+            profile_times[tag] = float(np.mean(values)) if len(values) else 0.0
+
         data_profiler = inputs.pop("_profiler", {})
         profile_times.update({f"{k}": torch.mean(v) for k, v in data_profiler.items()})
 
@@ -143,7 +149,7 @@ class PLModule(pl.LightningModule):
             self.visualize(inputs, outputs)
 
         metrics_dict = self._compute_train_metrics(inputs, outputs)
-        metrics_dict["data_time"] = data_time
+        metrics_dict["data_time"] = profile_times.get("data_time", 0.0)
         metrics_dict["train_loss"] = metrics_dict["loss"].clone()
         metrics_dict.update(self.get_learning_rates())
         metrics_dict.update({"profiler": profile_times})
@@ -198,6 +204,8 @@ class PLModule(pl.LightningModule):
             f"val_{k}": torch.mean(torch.tensor([res[k] for res in results.values()])) for k in keys
         }
         flattened_results.update(average_results)
+
+        self.val_losses = comm.all_gather(self.val_losses)
         flattened_results["val_loss"] = torch.mean(torch.as_tensor(self.val_losses))
 
         self.std_log.info("Validation Summary")
