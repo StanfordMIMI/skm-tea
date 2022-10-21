@@ -21,3 +21,9 @@ test-cov:
 dev:
 	pip install --upgrade black==22.3.0 coverage isort flake8 flake8-bugbear flake8-comprehensions pytest pre-commit
 	pre-commit install
+
+
+build-docs:
+	rm -rf docs/build
+	rm -rf docs/source/apidocs/generated
+	sphinx-build -b html docs/source/ docs/build/html/

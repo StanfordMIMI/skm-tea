@@ -2,7 +2,7 @@ import inspect
 import logging
 import os
 import warnings
-from typing import Dict, Sequence, Union
+from typing import Dict, Optional, Sequence, Union
 
 import dosma as dm
 import numpy as np
@@ -23,14 +23,18 @@ __all__ = ["QuantitativeKneeMRI"]
 class QuantitativeKneeMRI(Metric):
     """Metric for computing quantitative MRI parameters for knee tissues.
 
-    If ``use_subregions=True``, tissues that are supported for subdivision by DOSMA
-    are subdivided into clinically relevant regions. As of v0.1.0, DOSMA currently
-    supports subdivision for femoral cartilage, tibial cartilage, and patellar cartilage.
+    If ``use_subregions=True``, tissues that are supported for subdivision by
+    `DOSMA <https://github.com/ad12/dosma>`_ are subdivided into clinically relevant regions.
+    As of v0.1.0, DOSMA supports subdivision for femoral cartilage, tibial cartilage, and patellar
+    cartilage.
 
     See :cls:`meddlr.metrics.Metric` for argument details.
 
     Note:
         This metric does not preserve gradients. It should not be used for loss computation.
+
+    Note:
+        This metric is only valid for volumetric inputs.
     """
 
     _SUPPORTED_TISSUES = {"fc", "tc", "pc", "men"}
@@ -40,14 +44,14 @@ class QuantitativeKneeMRI(Metric):
         self,
         subregions: bool = False,
         channel_names: Sequence[str] = None,
-        units: str = None,
-        reduction="none",
+        units: Optional[str] = None,
+        reduction: str = "none",
         compute_on_step: bool = False,
         dist_sync_on_step: bool = False,
         process_group: bool = None,
         dist_sync_fn: bool = None,
         use_cpu: bool = False,
-        output_dir: str = None,
+        output_dir: Optional[str] = None,
     ):
         """
         Args:
@@ -57,7 +61,17 @@ class QuantitativeKneeMRI(Metric):
                 process. This should correspond to channels in the segmentation mask.
                 Use ``'fc'`` for femoral cartilage, ``'tc'`` for tibial cartilage,
                 ``'pc'`` for patellar cartilage, and ``'men'`` for meniscus.
-            units (str, optional): Units for this metric.
+            units (str, optional): Units for this metric. Typically milliseconds (ms).
+            reduction: See :cls:`meddlr.metrics.Metric`.
+            compute_on_step: See :cls:`meddlr.metrics.Metric`.
+            dist_sync_on_step: See :cls:`meddlr.metrics.Metric`.
+            process_group: See :cls:`meddlr.metrics.Metric`.
+            dist_sync_fn: See :cls:`meddlr.metrics.Metric`.
+            use_cpu: Whether to use the CPU instead of the GPU for computing the metric.
+                Subregion division is not supported on the GPU and will be automatically
+                performed on the CPU.
+            output_dir: The directory to store DOSMA outputs to.
+                The results will be stored on a per-scan basis to ``output_dir / {scan_id}``.
         """
         if (
             subregions

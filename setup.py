@@ -117,7 +117,8 @@ setup(
             "sphinxcontrib-bibtex",
             "sphinx-rtd-theme",
             "m2r2",
-        ]
+        ],
+        "docs": ["sphinx", "sphinxcontrib.bibtex", "sphinx-rtd-theme", "m2r2"],
     },
     classifiers=[
         # Trove classifiers
