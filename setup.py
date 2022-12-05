@@ -95,7 +95,7 @@ setup(
         "xlrd",
         "monai>=0.3.0",
         "meddlr>=0.0.5",
-        "pytorch-lightning>=1.0.0",
+        "pytorch-lightning>=1.0.0,<1.8.0",
         "zarr",
     ],
     extras_require={
