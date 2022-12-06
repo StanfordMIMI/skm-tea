@@ -13,7 +13,7 @@ from meddlr.data.transforms.transform import AffineNormalizer
 from meddlr.forward import SenseModel
 from meddlr.ops import complex as cplx
 from meddlr.utils import profiler
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from tqdm.contrib.concurrent import process_map
 
 from skm_tea.modeling.build import get_model_cfg
