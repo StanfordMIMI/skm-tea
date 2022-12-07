@@ -3,6 +3,8 @@ import json
 import logging
 import os
 import re
+import shutil
+import tarfile
 import time
 import warnings
 from types import SimpleNamespace
@@ -11,6 +13,7 @@ from typing import Any, Dict, Sequence
 import h5py
 import pandas as pd
 from meddlr.data.catalog import DatasetCatalog, MetadataCatalog
+from tqdm.auto import tqdm
 
 from skm_tea.utils import env
 
@@ -410,6 +413,71 @@ def register_all_skm_tea():
     for name, init_args in _build_predefined_splits().items():
         _, ann_file = init_args
         register_skm_tea(name, json_file=ann_file)
+
+
+def download_skm_tea_mini(version="v1", track=None, force: bool = False):
+    """Download the SKM-TEA Mini dataset.
+
+    The dataset will be downloaded under the dataset directory.
+    Make sure the datasets path in meddlr is configured.
+
+    Args:
+        version: The version of the dataset.
+        track: The track to download data for. Either 'raw_data' or 'dicom'.
+            If None, download all tracks.
+        force: Whether to force download the dataset - i.e. overwrite existing files.
+    """
+    if version not in ["v1"]:
+        raise ValueError(f"Version {version} not supported.")
+    pm = env.get_path_manager()
+
+    download_path = f"data://skm-tea-mini/{version}-release"
+    download_path = pm.get_local_path(download_path)
+
+    if force and os.path.isdir(download_path):
+        shutil.rmtree(download_path)
+
+    if os.path.isdir(download_path):
+        return
+
+    url = f"https://huggingface.co/datasets/arjundd/skm-tea-mini/resolve/main/{version}-release"
+    os.makedirs(download_path)
+    for fname in [
+        "all_metadata.csv",
+        "annotations/v1.0.0/train.json",
+        "annotations/v1.0.0/val.json",
+        "annotations/v1.0.0/test.json",
+    ]:
+        out = f"{download_path}/{fname}"
+        os.makedirs(os.path.dirname(out), exist_ok=True)
+        pm.get_local_path(f"{url}/{fname}", cache=out)
+
+    raw_data_files = ["files_recon_calib-24", "segmentation_masks"]
+    dicom_files = ["dicoms", "image_files", "segmentation_masks"]
+    all_files = set(raw_data_files + dicom_files)
+
+    if track == "raw_data":
+        files = raw_data_files
+    elif track == "dicom":
+        files = dicom_files
+    elif track is None:
+        files = all_files
+    else:
+        raise ValueError(f"Track {track} not supported.")
+
+    pbar_files = tqdm(files, disable=False)
+    for fname in pbar_files:
+        pbar_files.set_description(f"Downloading {fname}")
+        tar_url = f"{url}/tarball/{fname}.tar.gz"
+        tar_path = pm.get_local_path(tar_url, cache=f"{download_path}/{fname}.tar.gz")
+
+        pbar_files.set_description(f"Extracting {fname}")
+        # TODO: add progress bar for extraction.
+        with tarfile.open(tar_path, "r:gz") as tfile:
+            tfile.extractall(download_path)
+        os.remove(tar_path)
+
+    return download_path
 
 
 try:
