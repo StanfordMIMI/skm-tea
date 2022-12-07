@@ -12,7 +12,7 @@ import torch
 from meddlr.data.data_utils import HDF5Manager, collect_mask
 from meddlr.data.slice_dataset import SliceData
 from meddlr.utils import profiler
-from tqdm import tqdm
+from tqdm.auto import tqdm
 
 from skm_tea.data.register import seg_categories_to_idxs
 from skm_tea.data.transform import qDESSDataTransform
@@ -207,7 +207,7 @@ class SkmTeaRawDataset(SliceData):
         logger.info("Building statistics...")
         target_stats = stats.get("target", {})
         modified = False
-        for dd in tqdm(dataset_dicts):
+        for dd in tqdm(dataset_dicts, desc="Building dataset stats"):
             scan_id = dd["scan_id"]
             if scan_id in target_stats:
                 continue
