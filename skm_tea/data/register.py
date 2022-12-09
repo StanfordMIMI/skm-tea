@@ -1,4 +1,5 @@
 """General utilities for the SKM-TEA dataset."""
+import itertools
 import json
 import logging
 import os
@@ -464,9 +465,9 @@ def download_skm_tea_mini(
 
     files_map = {
         "raw_data": ["files_recon_calib-24", "segmentation_masks"],
-        "dicom_files": ["dicoms", "image_files", "segmentation_masks"],
+        "dicom": ["dicoms", "image_files", "segmentation_masks"],
     }
-    files_map[None] = set(sum(list(x) for x in files_map.values()))
+    files_map[None] = set(itertools.chain(*files_map.values()))
 
     if track not in files_map:
         raise ValueError(f"Track {track} not supported. Must be one of {files_map.keys()}")
