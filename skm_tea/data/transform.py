@@ -2,23 +2,24 @@ import itertools
 import logging
 import os
 from functools import partial
-from typing import Any, Callable, Collection, Dict, Tuple, Union
+from typing import Any, Callable, Collection, Dict, Sequence, Tuple, Union
 
 import meddlr.ops as oF
 import numpy as np
 import torch
 import zarr
-from meddlr.data.transforms.transform import AffineNormalizer, build_normalizer
+from meddlr.config.config import configurable
+from meddlr.data.transforms.transform import AffineNormalizer
 from meddlr.forward import SenseModel
 from meddlr.ops import complex as cplx
 from meddlr.utils import profiler
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from tqdm.contrib.concurrent import process_map
 
 from skm_tea.modeling.build import get_model_cfg
 from skm_tea.utils import env
 
-__all__ = ["CachingSubsampler", "qDESSDataTransform"]
+__all__ = ["CachingSubsampler", "qDESSDataTransform", "SkmTeaDataTransform"]
 _logger = logging.getLogger(__name__)
 
 
@@ -248,7 +249,16 @@ class _DataTransform:
     For scans that
     """
 
-    def __init__(self, cfg, mask_func, is_test: bool = False, add_noise: bool = False):
+    @configurable
+    def __init__(
+        self,
+        mask_func: Callable,
+        is_test: bool = False,
+        add_noise: bool = False,
+        use_magnitude: bool = False,
+        seed: int = None,
+        p_noise: float = 0.0,
+    ):
         """
         Args:
             mask_func (utils.subsample.MaskFunc): A function that can create a
@@ -259,25 +269,16 @@ class _DataTransform:
                 mask is used for all the slices of a given volume every time.
                 TODO (#1): Rename to `is_eval`.
         """
-        self._cfg = cfg
         self.mask_func = mask_func
         self._is_test = is_test
+        self.use_magnitude = use_magnitude
 
-        try:
-            model_cfg = get_model_cfg(cfg)
-            self.use_magnitude = model_cfg.get("USE_MAGNITUDE", False)
-        except (KeyError, ValueError):
-            self.use_magnitude = False
-
-        # Build subsampler.
-        # mask_func = build_mask_func(cfg)
+        # Certain masking functions are very slow.
+        # Cache the masks to speed up training.
         self._subsampler = CachingSubsampler(self.mask_func)
         self.add_noise = add_noise
-        seed = cfg.SEED if cfg.SEED > -1 else None
         self.rng = np.random.RandomState(seed)
-        self.p_noise = cfg.AUG_TRAIN.NOISE_P
-        self._normalizer = build_normalizer(cfg)
-
+        self.p_noise = p_noise
         self._normalizer = AffineNormalizer()
 
     @profiler.time_profile()
@@ -403,6 +404,20 @@ class _DataTransform:
 
         return masked_kspace, maps, target, mean, std, norm, image
 
+    @classmethod
+    def from_config(cls, cfg) -> Dict[str, Any]:
+        kwargs = {}
+
+        try:
+            model_cfg = get_model_cfg(cfg)
+            kwargs["use_magnitude"] = model_cfg.get("USE_MAGNITUDE", False)
+        except (KeyError, ValueError):
+            kwargs["use_magnitude"] = False
+
+        kwargs["seed"] = cfg.SEED if cfg.SEED > -1 else None
+        kwargs["p_noise"] = cfg.AUG_TRAIN.NOISE_P
+        return kwargs
+
 
 class qDESSDataTransform(_DataTransform):
     """Data transform for SKM-TEA dataset.
@@ -413,7 +428,17 @@ class qDESSDataTransform(_DataTransform):
         - "sem_seg": semantic segmentation mask
     """
 
-    def __init__(self, cfg, mask_func, is_test: bool = False):
+    @configurable
+    def __init__(
+        self,
+        mask_func: Callable,
+        tasks: Sequence[str],
+        is_test: bool = False,
+        add_noise: bool = False,
+        use_magnitude: bool = False,
+        seed: int = None,
+        p_noise: float = 0.0,
+    ):
         """
         Args:
             mask_func (utils.subsample.MaskFunc): A function that can create a
@@ -424,8 +449,17 @@ class qDESSDataTransform(_DataTransform):
                 mask is used for all the slices of a given volume every time.
                 TODO (#1): Rename to `is_eval`.
         """
-        super().__init__(cfg, mask_func, is_test)
-        self.tasks = cfg.MODEL.TASKS
+        super().__init__(
+            mask_func=mask_func,
+            is_test=is_test,
+            add_noise=add_noise,
+            use_magnitude=use_magnitude,
+            seed=seed,
+            p_noise=p_noise,
+        )
+        if isinstance(tasks, str):
+            tasks = (tasks,)
+        self.tasks = tasks
 
     def __call__(
         self,
@@ -505,6 +539,20 @@ class qDESSDataTransform(_DataTransform):
 
         # TODO: Add any transformation of segmentations, bounding boxes, etc.
         return example
+
+    @property
+    def subsampler(self):
+        """Returns the Subsampler which retrospectively undersamples k-space."""
+        return self._subsampler
+
+    @classmethod
+    def from_config(cls, cfg) -> Dict[str, Any]:
+        kwargs = super().from_config(cfg)
+        kwargs["tasks"] = cfg.MODEL.TASKS
+        return kwargs
+
+
+SkmTeaDataTransform = qDESSDataTransform
 
 
 def _precompute_mask(mask_kwargs: Dict[str, Any], mask_func: Callable = None):
