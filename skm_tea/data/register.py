@@ -1,8 +1,11 @@
 """General utilities for the SKM-TEA dataset."""
+import itertools
 import json
 import logging
 import os
 import re
+import shutil
+import subprocess
 import time
 import warnings
 from types import SimpleNamespace
@@ -11,6 +14,7 @@ from typing import Any, Dict, Sequence
 import h5py
 import pandas as pd
 from meddlr.data.catalog import DatasetCatalog, MetadataCatalog
+from tqdm.auto import tqdm
 
 from skm_tea.utils import env
 
@@ -410,6 +414,77 @@ def register_all_skm_tea():
     for name, init_args in _build_predefined_splits().items():
         _, ann_file = init_args
         register_skm_tea(name, json_file=ann_file)
+
+
+def download_skm_tea_mini(
+    version="v1", track=None, download_path: str = None, force: bool = False, show_pbar: bool = True
+):
+    """Download the SKM-TEA Mini dataset.
+
+    The dataset will be downloaded under the dataset directory.
+    Make sure the datasets path in meddlr is configured.
+
+    Args:
+        version: The version of the dataset.
+        track: The track to download data for. Either 'raw_data' or 'dicom'.
+            If None, download all tracks.
+        download_path: The path to download the dataset to.
+            If None, download to the default dataset directory.
+            We recommend using the default directory for seamless integration with meddlr.
+        force: Whether to force download the dataset - i.e. overwrite existing files.
+        show_pbar: Whether to show a progress bar.
+
+    Returns:
+        str: The path to the downloaded dataset.
+    """
+    if version not in ["v1"]:
+        raise ValueError(f"Version {version} not supported.")
+    pm = env.get_path_manager()
+
+    if download_path is None:
+        download_path = f"data://skm-tea-mini/{version}-release"
+        download_path = pm.get_local_path(download_path)
+
+    if force and os.path.isdir(download_path):
+        shutil.rmtree(download_path)
+
+    if os.path.isdir(download_path):
+        return
+
+    url = f"https://huggingface.co/datasets/arjundd/skm-tea-mini/resolve/main/{version}-release"
+    os.makedirs(download_path)
+    for fname in [
+        "all_metadata.csv",
+        "annotations/v1.0.0/train.json",
+        "annotations/v1.0.0/val.json",
+        "annotations/v1.0.0/test.json",
+    ]:
+        out = f"{download_path}/{fname}"
+        os.makedirs(os.path.dirname(out), exist_ok=True)
+        pm.get_local_path(f"{url}/{fname}", cache=out)
+
+    files_map = {
+        "raw_data": ["files_recon_calib-24", "segmentation_masks"],
+        "dicom": ["dicoms", "image_files", "segmentation_masks"],
+    }
+    files_map[None] = set(itertools.chain(*files_map.values()))
+
+    if track not in files_map:
+        raise ValueError(f"Track {track} not supported. Must be one of {files_map.keys()}")
+    files = files_map[track]
+
+    pbar_files = tqdm(files, disable=not show_pbar)
+    for fname in pbar_files:
+        pbar_files.set_description(f"Downloading {fname}")
+
+        # Shell wget -> tar pipe is faster than python wget and tarfile.
+        tar_url = f"{url}/tarball/{fname}.tar.gz"
+        ps = subprocess.Popen(
+            ("wget", "-c" if show_pbar else "-cq", tar_url, "-O", "-"), stdout=subprocess.PIPE
+        )
+        _ = subprocess.check_output(("tar", "-xz", "-C", download_path), stdin=ps.stdout)
+
+    return download_path
 
 
 try:
