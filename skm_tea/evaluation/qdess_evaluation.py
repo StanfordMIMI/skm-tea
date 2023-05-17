@@ -1,3 +1,4 @@
+import asyncio
 import copy
 import logging
 import os
@@ -339,8 +340,20 @@ class SkmTeaEvaluator(ScanEvaluator):
 
         # Compute T2 scans
         outputs = {}
-        for scan_id in tqdm(scan_ids, desc="Structuring T2 map"):
+
+        # Load the scans async.
+        async def _get_segs():
+            tasks = [self._get_segmentations_async(scans, scan_id) for scan_id in scan_ids]
+            results = await asyncio.gather(*tasks)
+            return results
+
+        # segmentations = asyncio.run(_get_segs())
+
+        pbar = tqdm(scan_ids, desc="qMRI")
+        for _i, scan_id in enumerate(pbar):
+            pbar.set_description("qMRI - Loading Segmentations")
             seg_kwargs = self._get_segmentations(scans, scan_id)
+            pbar.set_description("qMRI - Computing T2 maps")
             qmap_kwargs = self._get_t2(scans, scan_id, seg_kwargs, device)
 
             metadata = self._metadata.scan_metadata
@@ -361,33 +374,23 @@ class SkmTeaEvaluator(ScanEvaluator):
 
     def _get_segmentations(self, scans, scan_id) -> Dict[str, MedicalVolume]:
         if "sem_seg" not in scans:
-            scan_metadata = self._scan_metadata[scan_id]
-            orientation, spacing = scan_metadata["orientation"], scan_metadata["voxel_spacing"]
-            affine = dm.to_affine(orientation, spacing)
-
-            # seg_file = path_manager.get_local_path(
-            #     os.path.join(self._metadata.image_dir, scan_id + ".h5")
-            # )
-            # assert self.seg_classes == ("pc", "fc", "tc", "men")
-            # with h5py.File(seg_file, "r") as f:
-            #     gt_seg = f["seg"][()]
-            gt_seg = dm.NiftiReader().load(
-                os.path.join(self._metadata.mask_gradwarp_corrected_dir, scan_id + ".nii.gz")
+            gt_seg = _load_segmentation(
+                scan_id=scan_id,
+                scan_metadata=self._scan_metadata[scan_id],
+                seg_folder=self._metadata.mask_gradwarp_corrected_dir,
+                seg_classes=self.seg_classes,
             )
-            gt_seg = oF.categorical_to_one_hot(
-                gt_seg.A.astype(np.int64), background=0, channel_dim=-1
-            )
-            seg_idxs = seg_categories_to_idxs(self.seg_classes)
-            gt_seg = collect_mask(gt_seg, index=seg_idxs, out_channel_first=False)
-            gt_seg = dm.MedicalVolume(gt_seg, affine=affine)
             return {"sem_seg_gt": gt_seg}
 
-        gt_seg = scans["sem_seg"][scan_id]["target"].permute((1, 2, 3, 0))
-        pred_seg = scans["sem_seg"][scan_id]["pred"].permute((1, 2, 3, 0))
+        gt_seg = scans["sem_seg"][scan_id]["target"].permute((1, 2, 3, 0)).contiguous()
+        pred_seg = scans["sem_seg"][scan_id]["pred"].permute((1, 2, 3, 0)).contiguous()
         affine = scans["sem_seg"][scan_id]["affine"]
         gt_seg = dm.MedicalVolume.from_torch(gt_seg, affine=affine)
         pred_seg = dm.MedicalVolume.from_torch(pred_seg, affine=affine)
         return {"sem_seg_gt": gt_seg, "sem_seg_pred": pred_seg}
+
+    async def _get_segmentations_async(self, scans, scan_id) -> Dict[str, MedicalVolume]:
+        return self._get_segmentations(scans, scan_id)
 
     def _get_t2(self, scans, scan_id, segmentations, device=None):
         path_manager = env.get_path_manager()
@@ -549,17 +552,22 @@ class SkmTeaEvaluator(ScanEvaluator):
             else:
                 echo1, echo2 = echos[0], echos[1]
 
+        echo1 = echo1.type(torch.float32)
+        echo2 = echo2.type(torch.float32)
+
         # Compute t1 map based on the segmentation.
         # T1 for all relevant tissues is assumed to be 1.2 seconds (1200 ms)
         # except for meniscus, which is 1 second.
         xp = get_array_module(seg.A)
-        t1 = 1200.0 * MedicalVolume(xp.ones_like(seg.A[..., 0]), affine=seg.affine)
+        t1 = xp.full(seg.A[..., 0].shape, 1200.0, dtype=xp.float32, order="C")
         men_idx = self.seg_classes.index("men")
         t1[seg[..., men_idx].A == 1] = 1000.0
+        t1 = MedicalVolume(t1, affine=seg.affine)
 
         echo1 = MedicalVolume.from_torch(echo1, affine=affine)
         echo2 = MedicalVolume.from_torch(echo2, affine=affine)
-        t1 = t1.reformat_as(echo1)
+        t1 = MedicalVolume(xp.ascontiguousarray(t1.reformat_as(echo1).A), affine=t1.affine)
+
         qdess = QDess([echo1, echo2])
         t2map = qdess.generate_t2_map(
             suppress_fat=True,
@@ -574,3 +582,33 @@ class SkmTeaEvaluator(ScanEvaluator):
             nan_to_num=True,
         )
         return t2map.volumetric_map
+
+
+def _load_segmentation(scan_id, scan_metadata, seg_classes, seg_folder):
+    """Load the scan from disk."""
+    orientation, spacing = scan_metadata["orientation"], scan_metadata["voxel_spacing"]
+    affine = dm.to_affine(orientation, spacing)
+
+    st = time.perf_counter()
+    gt_seg = dm.NiftiReader().load(os.path.join(seg_folder, scan_id + ".nii.gz"))
+    print(f"Loading segmentation took {time.perf_counter() - st:0.2f} seconds")
+    # TODO: Do we need to make this contiguous?
+    # gt_seg = gt_seg.A.astype(np.uint8)
+
+    st = time.perf_counter()
+    gt_seg = oF.categorical_to_one_hot(
+        gt_seg.A,
+        background=0,
+        channel_dim=-1,
+        num_categories=6,
+    )
+    print(f"Converting to one hot took {time.perf_counter() - st:0.2f} seconds")
+
+    seg_idxs = seg_categories_to_idxs(seg_classes)
+    # This line can be slow
+    st = time.perf_counter()
+    gt_seg = collect_mask(gt_seg, index=seg_idxs, out_channel_first=False)
+    print(f"Collecting mask took {time.perf_counter() - st:0.2f} seconds")
+    # Make sure this is contigous
+    gt_seg = dm.MedicalVolume(gt_seg, affine=affine)
+    return gt_seg

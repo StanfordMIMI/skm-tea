@@ -356,6 +356,9 @@ _C.TEST.QDESS_EVALUATOR.ADDITIONAL_PATHS = ()
 # Each item is [task, metric, value, tolerance]
 # e.g.: [['bbox', 'AP', 38.5, 0.2]]
 _C.TEST.EXPECTED_RESULTS = []
+# Postprocessing for test scans
+_C.TEST.POSTPROCESSOR = CN()
+_C.TEST.POSTPROCESSOR.NAME = ""
 
 # VALIDATION BEHAVES LIKE TEST-TIME. To make this configurable, uncomment this line.
 # Validate with test-like functionality.

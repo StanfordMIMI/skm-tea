@@ -25,7 +25,7 @@ class SkmTeaDataModule(pl.LightningDataModule):
         - Add support for downloading dataset.
     """
 
-    def __init__(self, cfg, tasks, distributed: bool = False, track=None):
+    def __init__(self, cfg, tasks, distributed: bool = False, track=None, train_collate_fn=None):
         super().__init__()
         self.cfg = cfg
         self.tasks = tasks
@@ -51,6 +51,7 @@ class SkmTeaDataModule(pl.LightningDataModule):
             )
         self.acceleration = float(acceleration[0])
         self.precompute_masks = cfg.AUG_TRAIN.UNDERSAMPLE.PRECOMPUTE.NUM > 0
+        self.train_collate_fn = train_collate_fn or default_collate
 
     def dataset_type(self, dataset_name):
         return _TRACKS_TO_DATASETS[self.track]
@@ -97,12 +98,13 @@ class SkmTeaDataModule(pl.LightningDataModule):
                 "drop_last": cfg.DATALOADER.DROP_LAST,
             }
 
+        num_workers = cfg.DATALOADER.NUM_WORKERS
         return DataLoader(
             dataset=dataset,
-            num_workers=cfg.DATALOADER.NUM_WORKERS,
+            num_workers=num_workers,
             pin_memory=self.pin_memory,
-            collate_fn=default_collate,
-            prefetch_factor=cfg.DATALOADER.PREFETCH_FACTOR,
+            collate_fn=self.train_collate_fn,
+            prefetch_factor=cfg.DATALOADER.PREFETCH_FACTOR if num_workers > 0 else None,
             **dl_kwargs,
         )
 
@@ -141,7 +143,9 @@ class SkmTeaDataModule(pl.LightningDataModule):
             dataset_dicts = get_recon_dataset_dicts(
                 dataset_names=[dataset_name],
                 filter_by=None,
-                num_scans_total=self.cfg.DATALOADER.SUBSAMPLE_TRAIN.NUM_VAL,
+                num_scans_total=self.cfg.DATALOADER.SUBSAMPLE_TRAIN.NUM_VAL
+                # if split == "val"
+                # else -1,
             )
 
             aug_cfg = self.cfg.AUG_TRAIN.clone()
@@ -155,6 +159,7 @@ class SkmTeaDataModule(pl.LightningDataModule):
             mask_func_kwargs = (
                 {"module": "sigpy"} if aug_cfg.UNDERSAMPLE.NAME == "PoissonDiskMaskFunc" else {}
             )
+            mask_func_kwargs = {}
             mask_func = build_mask_func(aug_cfg, **mask_func_kwargs)
             data_transform = qDESSDataTransform(self.cfg, mask_func=mask_func, is_test=True)
             dataset_kwargs = {
@@ -175,7 +180,7 @@ class SkmTeaDataModule(pl.LightningDataModule):
                 echo_type=self.cfg.DATASETS.QDESS.ECHO_KIND,
                 **dataset_kwargs,
             )
-            if "recon" in self.tasks and split != "test":
+            if "recon" in self.tasks and split not in ["val", "test"]:
                 data_transform._subsampler.precompute_masks(
                     acq_shapes={x["acq_shape"] for x in dataset.examples},
                     seed=list(set(dataset.get_undersampling_seeds())),

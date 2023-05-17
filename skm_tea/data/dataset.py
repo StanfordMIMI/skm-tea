@@ -301,6 +301,7 @@ class SkmTeaRawDataset(SliceData):
                     ex.update({k: dd[k] for k in self._DD_KEYS})
                     ex.update({k: tuple(v) for k, v in ex.items() if isinstance(v, list)})
                     ex["inplane_shape"] = inplane_shape
+                    ex["_is_unsupervised"] = dd.get("_is_unsupervised", False)
                     dd_examples.append(ex)
 
             examples.extend(dd_examples)
@@ -353,6 +354,7 @@ class SkmTeaRawDataset(SliceData):
 
         slice_id = example["slice_id"]
         scan_id = example["scan_id"]
+        is_unsupervised = example["_is_unsupervised"]
         output = {}
 
         # Load recon info.
@@ -371,7 +373,7 @@ class SkmTeaRawDataset(SliceData):
             if self.use_recon:
                 output["kspace"] = data[self.mapping["kspace"]][slice_id, ..., example["echo"], :]
                 output["maps"] = data[self.mapping["maps"]][slice_id]
-                if self.split == "test":
+                if self.split in ["val", "test"] or is_unsupervised:
                     acc = self.transform._subsampler.mask_func.accelerations
                     assert len(acc) == 1
                     acc = acc[0]
@@ -430,6 +432,8 @@ class SkmTeaRawDataset(SliceData):
             }
             if self.echo_type == "echo1+echo2":
                 output["metadata"]["echo"] = example["echo"]
+
+        output["is_unsupervised"] = is_unsupervised
         return output
 
     def __getitem__(self, i: int):
@@ -455,8 +459,17 @@ class SkmTeaRawDataset(SliceData):
                     * ``"echo"`` (int): The zero-indexed echo number.
                       This is only available when ``self.echo_type == "echo1+echo2"``.
         """
+        # When multiprocessing is used, the index sometimes returns a very large integer.
+        # As a temporary solution, we will take the module with respect to the length.
+        # TODO: Investigate this.
+        if self.split == "train":
+            i = i % len(self)
+
         # Copy so downstream loading/transforms can do whatever they want.
-        example = deepcopy(self.examples[i])
+        try:
+            example = deepcopy(self.examples[i])
+        except Exception as e:
+            raise IndexError(f"Index {i} in examples (len {len(self.examples)})") from e
 
         data = self._load_data(example, i)
         if self._include_metadata:

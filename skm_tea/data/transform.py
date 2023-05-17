@@ -241,6 +241,29 @@ class CachingSubsampler:
             mask = oF.zero_pad(mask, padded_mask_shape[1:])
         return torch.where(mask == 0, torch.tensor([0], dtype=data.dtype), data), mask
 
+    def edge_mask(self, kspace: torch.Tensor, mode: str = "2D", acq_shape: Tuple[int] = None):
+        data_shape = tuple(kspace.shape)
+        if not acq_shape:
+            acq_shape = data_shape[1:3] if mode == "2D" else data_shape[1:4]
+        else:
+            assert len(acq_shape) in (2, 3)
+        zero_pad = any(acq_dim != data_dim for acq_dim, data_dim in zip(acq_shape, data_shape[1:]))
+        extra_dims = len(data_shape) - 1 - len(acq_shape)
+        acq_shape_extended = (1,) + acq_shape + (1,) * extra_dims
+
+        mask_shape = self._get_mask_shape(acq_shape_extended, mode)
+        if zero_pad:
+            kspace = oF.center_crop(kspace, mask_shape[1:])
+
+        mask = self.mask_func.get_edge_mask(kspace, out_shape=mask_shape)
+
+        if zero_pad:
+            padded_mask_shape = self._get_mask_shape(data_shape, mode)
+            # Batch dimension is not passed to padding.
+            mask = oF.constant_pad(mask, padded_mask_shape[1:], value=1)
+
+        return mask
+
 
 class _DataTransform:
     """
@@ -258,6 +281,7 @@ class _DataTransform:
         use_magnitude: bool = False,
         seed: int = None,
         p_noise: float = 0.0,
+        postprocessor=None,
     ):
         """
         Args:
@@ -280,6 +304,7 @@ class _DataTransform:
         self.rng = np.random.RandomState(seed)
         self.p_noise = p_noise
         self._normalizer = AffineNormalizer()
+        self._postprocessor = postprocessor
 
     @profiler.time_profile()
     def __call__(
@@ -348,6 +373,13 @@ class _DataTransform:
         )
         timer.stop(_GENERATE_AND_APPLY_MASK)
 
+        edge_mask = self._subsampler.edge_mask(kspace, mode="2D", acq_shape=acq_shape)
+        postprocessing_mask = None
+        if self._is_test and self._postprocessor:
+            postprocessing_mask = edge_mask
+            if self._postprocessor == "hard_dc_all":
+                postprocessing_mask = (postprocessing_mask + mask).bool().type(torch.float32)
+
         # Zero-filled Sense Recon.
         timer.start(_ZF_RECON)
         if torch.is_complex(target_init):
@@ -402,7 +434,21 @@ class _DataTransform:
         if not self.use_magnitude:
             image = None
 
-        return masked_kspace, maps, target, mean, std, norm, image
+        out = {
+            "kspace": masked_kspace,
+            "maps": maps,
+            "target": target,
+            "mean": mean,
+            "std": std,
+            "norm": norm,
+            "image": image,
+            "edge_mask": edge_mask.squeeze(0),
+        }
+        if postprocessing_mask is not None:
+            out["postprocessing_mask"] = postprocessing_mask.squeeze(0)
+        return out
+
+        # return masked_kspace, maps, target, mean, std, norm, image
 
     @classmethod
     def from_config(cls, cfg) -> Dict[str, Any]:
@@ -416,6 +462,7 @@ class _DataTransform:
 
         kwargs["seed"] = cfg.SEED if cfg.SEED > -1 else None
         kwargs["p_noise"] = cfg.AUG_TRAIN.NOISE_P
+        kwargs["postprocessor"] = cfg.TEST.POSTPROCESSOR.NAME or None
         return kwargs
 
 
@@ -438,6 +485,7 @@ class qDESSDataTransform(_DataTransform):
         use_magnitude: bool = False,
         seed: int = None,
         p_noise: float = 0.0,
+        postprocessor: str = None,
     ):
         """
         Args:
@@ -456,6 +504,7 @@ class qDESSDataTransform(_DataTransform):
             use_magnitude=use_magnitude,
             seed=seed,
             p_noise=p_noise,
+            postprocessor=postprocessor,
         )
         if isinstance(tasks, str):
             tasks = (tasks,)
@@ -504,7 +553,7 @@ class qDESSDataTransform(_DataTransform):
                 * "std" (torch.Tensor): Normalization standard deviation
         """
         if "recon" in self.tasks:
-            masked_kspace, maps, target, mean, std, norm, image = super().__call__(
+            out = super().__call__(
                 example["kspace"],
                 example["maps"],
                 example["target"],
@@ -519,20 +568,17 @@ class qDESSDataTransform(_DataTransform):
             )
         else:
             # Normalization done by the model.
-            masked_kspace, maps, target, mean, std, norm, image = (
-                None,
-                None,
-                example["target"],
-                torch.as_tensor([0.0]),
-                torch.as_tensor([1.0]),
-                torch.as_tensor([1.0]),
-                None,
+            out = dict(
+                masked_kspace=None,
+                maps=None,
+                target=example["target"],
+                mean=torch.as_tensor([0.0]),
+                std=torch.as_tensor([1.0]),
+                norm=torch.as_tensor([1.0]),
+                image=None,
             )
 
-        for key, data in zip(
-            ["kspace", "maps", "target", "mean", "std", "norm", "zf_image"],
-            [masked_kspace, maps, target, mean, std, norm, image],
-        ):
+        for key, data in out.items():
             if data is None:
                 continue
             example[key] = data
