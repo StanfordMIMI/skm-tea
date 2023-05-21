@@ -187,11 +187,11 @@ class QuantitativeKneeMRI(Metric):
                 del tissue
 
             # Compute full volume quantitative analysis
-            df = df.append(
-                {
-                    "Category": tissue_key,
-                    "Mean": np.nanmean(qmap.A[(qmap.A != 0) & (sem_seg_mv.A != 0)]).item(),
-                },
+            avg_df = pd.DataFrame([{
+                "Category": tissue_key,
+                "Mean": np.nanmean(qmap.A[(qmap.A != 0) & (sem_seg_mv.A != 0)]).item(),
+            }])
+            df = pd.concat([df, avg_df],
                 ignore_index=True,
             )
             all_data.append(df)

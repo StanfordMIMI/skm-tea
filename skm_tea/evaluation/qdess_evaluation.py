@@ -167,7 +167,7 @@ class SkmTeaEvaluator(ScanEvaluator):
             else ("pc", "fc", "tc", "men")
         )
         # TODO: Change this to use subregions
-        self.subregions = tuple({"fc", "tc", "pc", "men"} & set(self.seg_classes))
+        self.subregions = False  # tuple({"fc", "tc", "pc", "men"} & set(self.seg_classes))
 
         if flush_period is None:
             flush_period = cfg.TEST.FLUSH_PERIOD
@@ -328,6 +328,8 @@ class SkmTeaEvaluator(ScanEvaluator):
 
         # Temporary fix for determining the device that the metrics should be computed on.
         # TODO: Find a better method for determining which device to compute on.
+        k = list(scans.keys())[0]
+        seg_device = scans[k][list(scans[k].keys())[0]]["pred"].device
         if not env.supports_cupy():
             scans = move_to_device(scans, "cpu")
         k = list(scans.keys())[0]
@@ -340,19 +342,10 @@ class SkmTeaEvaluator(ScanEvaluator):
 
         # Compute T2 scans
         outputs = {}
-
-        # Load the scans async.
-        async def _get_segs():
-            tasks = [self._get_segmentations_async(scans, scan_id) for scan_id in scan_ids]
-            results = await asyncio.gather(*tasks)
-            return results
-
-        # segmentations = asyncio.run(_get_segs())
-
         pbar = tqdm(scan_ids, desc="qMRI")
         for _i, scan_id in enumerate(pbar):
             pbar.set_description("qMRI - Loading Segmentations")
-            seg_kwargs = self._get_segmentations(scans, scan_id)
+            seg_kwargs = self._get_segmentations(scans, scan_id, device=seg_device)
             pbar.set_description("qMRI - Computing T2 maps")
             qmap_kwargs = self._get_t2(scans, scan_id, seg_kwargs, device)
 
@@ -372,13 +365,14 @@ class SkmTeaEvaluator(ScanEvaluator):
 
         return outputs
 
-    def _get_segmentations(self, scans, scan_id) -> Dict[str, MedicalVolume]:
+    def _get_segmentations(self, scans, scan_id, device) -> Dict[str, MedicalVolume]:
         if "sem_seg" not in scans:
             gt_seg = _load_segmentation(
                 scan_id=scan_id,
                 scan_metadata=self._scan_metadata[scan_id],
                 seg_folder=self._metadata.mask_gradwarp_corrected_dir,
                 seg_classes=self.seg_classes,
+                device=device
             )
             return {"sem_seg_gt": gt_seg}
 
@@ -456,13 +450,14 @@ class SkmTeaEvaluator(ScanEvaluator):
             for pred in tqdm(scans, desc="Scan Metrics", disable=not comm.is_main_process()):
                 self.evaluate_prediction(pred, self.scan_metrics)
             self._logger.info(
-                f"qDESS T2 Evaluation too {time.perf_counter() - start_time:0.2f} seconds"
+                f"qDESS T2 Evaluation took {time.perf_counter() - start_time:0.2f} seconds"
             )
 
         slice_metrics = self.aggregate_metrics("slice_metrics")
         scan_metrics = self.aggregate_metrics("scan_metrics")
-        pred_vals = slice_metrics.to_dict()
-        pred_vals.update(scan_metrics.to_dict())
+        pred_vals = slice_metrics.to_dict() if len(slice_metrics) else {}
+        if len(scan_metrics):
+            pred_vals.update(scan_metrics.to_dict())
         self._results = pred_vals
 
         self.log_summary(save_output=not self._is_flushing)
@@ -515,22 +510,26 @@ class SkmTeaEvaluator(ScanEvaluator):
             f.write("Results generated on %s\n" % time.strftime("%X %x %Z"))
             # f.write("Weights Loaded: %s\n" % os.path.basename(self._config.TEST_WEIGHT_PATH))
 
-            f.write("--" * 40)
-            f.write("\n")
-            f.write("Slice Metrics:\n")
-            f.write(slice_metrics.summary())
-            f.write("--" * 40)
-            f.write("\n")
-            f.write("Scan Metrics:\n")
-            f.write(scan_metrics.summary())
+            if len(slice_metrics):
+                f.write("--" * 40)
+                f.write("\n")
+                f.write("Slice Metrics:\n")
+                f.write(slice_metrics.summary())
+            if len(scan_metrics):
+                f.write("--" * 40)
+                f.write("\n")
+                f.write("Scan Metrics:\n")
+                f.write(scan_metrics.summary())
             f.write("--" * 40)
             f.write("\n")
 
-        df = slice_metrics.to_pandas()
-        df.to_csv(slice_metrics_path, header=True, index=True)
+        if len(slice_metrics):
+            df = slice_metrics.to_pandas()
+            df.to_csv(slice_metrics_path, header=True, index=True)
 
-        df = scan_metrics.to_pandas()
-        df.to_csv(scan_metrics_path, header=True, index=True)
+        if len(scan_metrics):
+            df = scan_metrics.to_pandas()
+            df.to_csv(scan_metrics_path, header=True, index=True)
 
     def compute_t2_map(self, echos, scan_id, affine, seg):
         """Computes T2 qMRI parameter map."""
@@ -584,31 +583,78 @@ class SkmTeaEvaluator(ScanEvaluator):
         return t2map.volumetric_map
 
 
-def _load_segmentation(scan_id, scan_metadata, seg_classes, seg_folder):
-    """Load the scan from disk."""
+def _load_segmentation(scan_id, scan_metadata, seg_classes, seg_folder, device="cpu"):
+    """Load the scan from disk.
+
+    Computations are done in torch as it appears to be more consistent in speed.
+    We recommend using the `device` argument to specify the device to compute on.
+    """
     orientation, spacing = scan_metadata["orientation"], scan_metadata["voxel_spacing"]
     affine = dm.to_affine(orientation, spacing)
 
     st = time.perf_counter()
     gt_seg = dm.NiftiReader().load(os.path.join(seg_folder, scan_id + ".nii.gz"))
-    print(f"Loading segmentation took {time.perf_counter() - st:0.2f} seconds")
-    # TODO: Do we need to make this contiguous?
-    # gt_seg = gt_seg.A.astype(np.uint8)
+    print(f"Loading segmentation: {time.perf_counter() - st:0.2f} seconds")
+    
+    # Convert to torch
+    st = time.perf_counter()
+    gt_seg = torch.as_tensor(gt_seg.A, dtype=torch.uint8, device=device)
+    print(f"to torch: {time.perf_counter() - st:0.2f} seconds")
 
     st = time.perf_counter()
     gt_seg = oF.categorical_to_one_hot(
-        gt_seg.A,
+        gt_seg,
         background=0,
         channel_dim=-1,
         num_categories=6,
     )
-    print(f"Converting to one hot took {time.perf_counter() - st:0.2f} seconds")
+    print(f"One hot: {time.perf_counter() - st:0.2f} seconds")
 
     seg_idxs = seg_categories_to_idxs(seg_classes)
     # This line can be slow
     st = time.perf_counter()
     gt_seg = collect_mask(gt_seg, index=seg_idxs, out_channel_first=False)
-    print(f"Collecting mask took {time.perf_counter() - st:0.2f} seconds")
+    print(f"Collecting mask: {time.perf_counter() - st:0.2f} seconds")
+
     # Make sure this is contigous
-    gt_seg = dm.MedicalVolume(gt_seg, affine=affine)
+    st = time.perf_counter()
+    gt_seg = gt_seg.contiguous()
+    if not env.supports_cupy():
+        gt_seg = gt_seg.cpu()
+    gt_seg = dm.MedicalVolume.from_torch(gt_seg, affine=affine)
+    print(f"Build volume: {time.perf_counter() - st:0.2f} seconds")
     return gt_seg
+
+
+
+# def _load_segmentation(scan_id, scan_metadata, seg_classes, seg_folder):
+#     """Load the scan from disk."""
+#     orientation, spacing = scan_metadata["orientation"], scan_metadata["voxel_spacing"]
+#     affine = dm.to_affine(orientation, spacing)
+
+#     st = time.perf_counter()
+#     gt_seg = dm.NiftiReader().load(os.path.join(seg_folder, scan_id + ".nii.gz"))
+#     print(f"Loading segmentation took {time.perf_counter() - st:0.2f} seconds")
+    
+#     # Making the array contiguous seems to help with speed.
+#     st = time.perf_counter()
+#     gt_seg = np.ascontiguousarray(gt_seg.A)# astype(np.uint8)
+#     print(f"Converting to uint8 took {time.perf_counter() - st:0.2f} seconds")
+
+#     st = time.perf_counter()
+#     gt_seg = oF.categorical_to_one_hot(
+#         gt_seg,
+#         background=0,
+#         channel_dim=-1,
+#         num_categories=6,
+#     )
+#     print(f"Converting to one hot took {time.perf_counter() - st:0.2f} seconds")
+
+#     seg_idxs = seg_categories_to_idxs(seg_classes)
+#     # This line can be slow
+#     st = time.perf_counter()
+#     gt_seg = collect_mask(gt_seg, index=seg_idxs, out_channel_first=False)
+#     print(f"Collecting mask took {time.perf_counter() - st:0.2f} seconds")
+#     # Make sure this is contigous
+#     gt_seg = dm.MedicalVolume(gt_seg, affine=affine)
+#     return gt_seg
