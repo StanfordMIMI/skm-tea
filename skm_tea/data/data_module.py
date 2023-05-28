@@ -137,6 +137,27 @@ class SkmTeaDataModule(pl.LightningDataModule):
             f"Could not determine SKM-TEA challenge track from dataset_type={dataset_type}"
         )
 
+    def build_transform(self, split: str, cfg=None):
+        if cfg is None:
+            cfg = self.cfg
+
+        aug_cfg = self.cfg.AUG_TRAIN.clone()
+        if split == "test":
+            aug_cfg.defrost()
+            aug_cfg.UNDERSAMPLE.ACCELERATIONS = self.cfg.AUG_TEST.UNDERSAMPLE.ACCELERATIONS
+            aug_cfg.freeze()
+            assert len(aug_cfg.UNDERSAMPLE.ACCELERATIONS) == 1
+        # Use sigpy backend for Poisson Disc generation.
+        # Related to meddlr issue #3.
+        mask_func_kwargs = (
+            {"module": "sigpy"} if aug_cfg.UNDERSAMPLE.NAME == "PoissonDiskMaskFunc" else {}
+        )
+        if split != "train":
+            mask_func_kwargs = {}
+        mask_func = build_mask_func(aug_cfg, **mask_func_kwargs)
+        transform = qDESSDataTransform(self.cfg, mask_func=mask_func, is_test=split != "train")
+        return transform
+
     def _make_eval_datasets(self, dataset_names, split="val"):
         datasets = []
         for dataset_name in dataset_names:
@@ -148,20 +169,22 @@ class SkmTeaDataModule(pl.LightningDataModule):
                 # else -1,
             )
 
-            aug_cfg = self.cfg.AUG_TRAIN.clone()
-            if split == "test":
-                aug_cfg.defrost()
-                aug_cfg.UNDERSAMPLE.ACCELERATIONS = self.cfg.AUG_TEST.UNDERSAMPLE.ACCELERATIONS
-                aug_cfg.freeze()
-                assert len(aug_cfg.UNDERSAMPLE.ACCELERATIONS) == 1
-            # Use sigpy backend for Poisson Disc generation.
-            # Related to meddlr issue #3.
-            mask_func_kwargs = (
-                {"module": "sigpy"} if aug_cfg.UNDERSAMPLE.NAME == "PoissonDiskMaskFunc" else {}
-            )
-            mask_func_kwargs = {}
-            mask_func = build_mask_func(aug_cfg, **mask_func_kwargs)
-            data_transform = qDESSDataTransform(self.cfg, mask_func=mask_func, is_test=True)
+            data_transform = self.build_transform(split=split)
+
+            # aug_cfg = self.cfg.AUG_TRAIN.clone()
+            # if split == "test":
+            #     aug_cfg.defrost()
+            #     aug_cfg.UNDERSAMPLE.ACCELERATIONS = self.cfg.AUG_TEST.UNDERSAMPLE.ACCELERATIONS
+            #     aug_cfg.freeze()
+            #     assert len(aug_cfg.UNDERSAMPLE.ACCELERATIONS) == 1
+            # # Use sigpy backend for Poisson Disc generation.
+            # # Related to meddlr issue #3.
+            # mask_func_kwargs = (
+            #     {"module": "sigpy"} if aug_cfg.UNDERSAMPLE.NAME == "PoissonDiskMaskFunc" else {}
+            # )
+            # mask_func_kwargs = {}
+            # mask_func = build_mask_func(aug_cfg, **mask_func_kwargs)
+            # data_transform = qDESSDataTransform(self.cfg, mask_func=mask_func, is_test=True)
             dataset_kwargs = {
                 k: v
                 for k, v in zip(
